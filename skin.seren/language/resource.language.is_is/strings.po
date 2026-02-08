@@ -1,5 +1,5 @@
 # Kodi Media Center language file
-# Addon Name: Finder
+# Addon Name: Seren
 # Addon id: skin.seren
 # Addon Provider: Team Kodi
 msgid ""
@@ -18,16 +18,16 @@ msgstr ""
 "X-Generator: Weblate 5.2.1\n"
 
 msgctxt "Addon Summary"
-msgid "Finder skin by phil65. (Kodi's default skin)"
-msgstr "Finder-skinnið eftir phil65. (sjálfgefið útlit Kodi)"
+msgid "Seren skin by phil65. (Kodi's default skin)"
+msgstr "Seren-skinnið eftir phil65. (sjálfgefið útlit Kodi)"
 
 msgctxt "Addon Description"
-msgid "Finder is the default skin for Kodi 17.0 and above. It attempts to be easy for first time Kodi users to understand and use."
-msgstr "Finder er sjálfgefið skinn fyrir Kodi 17.0 og nýrri. Með því á að vera auðvelt fyrir fyrsta-skiptis Kodi-notendur að skilja og nota viðmótið."
+msgid "Seren is the default skin for Kodi 17.0 and above. It attempts to be easy for first time Kodi users to understand and use."
+msgstr "Seren er sjálfgefið skinn fyrir Kodi 17.0 og nýrri. Með því á að vera auðvelt fyrir fyrsta-skiptis Kodi-notendur að skilja og nota viðmótið."
 
 msgctxt "Addon Disclaimer"
-msgid "Finder is the default skin for Kodi, removing it may cause issues"
-msgstr "Finder er sjálfgefið skinn fyrir Kodi, ef það er fjarlægt gætu komið upp ýmis vandamál"
+msgid "Seren is the default skin for Kodi, removing it may cause issues"
+msgstr "Seren er sjálfgefið skinn fyrir Kodi, ef það er fjarlægt gætu komið upp ýmis vandamál"
 
 msgctxt "#31000"
 msgid "Now playing"

@@ -252,7 +252,7 @@
 		            <shadowcolor>dimgrey</shadowcolor>
                     <align>left</align>
                     <aligny>center</aligny>
-                    <label>[B][UPPERCASE][COLOR deepskyblue]$INFO[ListItem.Label][/COLOR][/UPPERCASE][/B]</label>
+                    <label>[B][UPPERCASE][COLOR dodgerblue]$INFO[ListItem.Label][/COLOR][/UPPERCASE][/B]</label>
                     <scroll>true</scroll>
                 </control>
                  <control type="label">

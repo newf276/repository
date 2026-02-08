@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.cbc"
-       name="[COLOR deepskyblue]Canadian Broadcasting Corp (CBC)[/COLOR]"
+       name="[COLOR dodgerblue]Canadian Broadcasting Corp[/COLOR]"
        version="7.0.22+matrix.1"
        provider-name="newf276,micahg,t1m,smf007,oshanrube,jgaudet">
   <requires>

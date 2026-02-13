@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="plugin.video.fenlight" name="FenLightAM" provider-name="AnonyMouse" version="2.1.82">
+<addon id="plugin.video.fenlight" name="FenLightAM" provider-name="AnonyMouse" version="2.1.84">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.pil" version="1.1.7"/>
@@ -442,9 +442,9 @@
 </addon>
 
 <addon id="plugin.video.cbc"
-       name="[COLOR dodgerblue]Canadian Broadcasting Corp[/COLOR]"
-       version="7.0.22+matrix.1"
-       provider-name="newf276,micahg,t1m,smf007,oshanrube,jgaudet">
+       name="Canadian Broadcasting Corp (CBC)"
+       version="8.0.22+matrix.1"
+       provider-name="micahg,t1m,smf007,oshanrube,jgaudet">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.requests" version="2.22.0"/>
@@ -470,7 +470,9 @@
     <forum>https://forum.kodi.tv/showthread.php?tid=328421</forum>
     <website>https://watch.cbc.ca/</website>
     <source>https://github.com/micahg/plugin.video.cbc</source>
-    <news>- Updates for new Auth API</news>
+    <news>
+      - Fixed Categories, they now display proper content.
+    </news>
   </extension>
 </addon>
 

@@ -4,6 +4,7 @@ import os
 from optparse import OptionParser
 from operator import itemgetter
 from resources.lib.epg import get_iptv_epg
+from resources.lib.utils import iso8601_to_local, is_pending
 
 # parse the options
 parser = OptionParser()
@@ -71,6 +72,8 @@ if options.format:
         b = GemV2.get_format(options.format)
         # 8 was Rosemary Barton Live
         for i in range(0, len(b)):
+            # if b[i]['url'] == 'about-that-with-andrew-chang':
+            #     break
             if b[i]['url'] == 'rosemary-barton-live':
                 break
         # i = 1
@@ -96,17 +99,17 @@ if options.format:
     if options.format == "section/sports":
         b = GemV2.get_format(options.format)        
         n = GemV2.normalized_format_item(b[0])
-        # print(f'{n["label"]}')
+        # print(f'{n["title"]}')
         p = GemV2.normalized_format_path(b[0], options.format)
         b = GemV2.get_format(p)
         # i think these are upcomming
-        idx = 15
+        idx = 5
         n = GemV2.normalized_format_item(b[idx])
-        print(f'{n["label"]}')
+        print(f'{n["title"]}')
         p = GemV2.normalized_format_path(b[idx], p)
         b = GemV2.get_format(p)
         n = GemV2.normalized_format_item(b[0])
-        print(f'{n["label"]}')
+        print(f'{n["title"]}')
         p = GemV2.normalized_format_path(b[0], p)
         s = GemV2.get_stream(id=p, app_code=n['app_code'])
         print(f"{s['type']} {s['url']}")
@@ -128,7 +131,9 @@ elif options.channel:
     print(stream)    
 elif options.chans:
     res = chans.get_live_channels()
-    print(res)
+    for channel in res:
+        labels = CBC.get_labels(channel)
+        print(labels['title'])
 elif options.progs:
     res = events.getLivePrograms()
 elif options.video:

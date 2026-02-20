@@ -442,9 +442,9 @@
 </addon>
 
 <addon id="plugin.video.cbc"
-       name="Canadian Broadcasting Corp (CBC)"
-       version="8.0.22+matrix.1"
-       provider-name="micahg,t1m,smf007,oshanrube,jgaudet">
+       name="[COLOR dodgerblue]CBC[/COLOR] (Canadian Broadcasting Corporation)"
+       version="8.1.22+matrix.1"
+       provider-name="newf276,micahg,t1m,smf007,oshanrube,jgaudet">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.requests" version="2.22.0"/>

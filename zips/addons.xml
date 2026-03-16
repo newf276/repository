@@ -443,7 +443,7 @@
 
 <addon id="plugin.video.cbc"
        name="[COLOR dodgerblue]Canadian Broadcasting Corp [/COLOR]"
-       version="8.2.23+matrix.1"
+       version="8.3.23+matrix.1"
        provider-name="micahg,t1m,smf007,oshanrube,jgaudet">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>

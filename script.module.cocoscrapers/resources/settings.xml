@@ -1,104 +1,819 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-
-<category label="Sources"> <!-- Sources -->
-    <setting id="module.provider" type="text" label="Choose Module Scraper" default="Cocoscrapers" enable="false" />
-    <setting type="action" label="Enable Cocoscrapers Default Providers" action="RunPlugin(plugin://script.module.cocoscrapers/?action=Defaults&amp;setting=true)" />
-    <setting type="action" label="Enable All Providers" visible="false" action="RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAll&amp;setting=true)" />
-    <setting type="action" label="Disable All Providers" visible="false" action="RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAll&amp;setting=false)" />
-    <setting type="action" label="Enable All Torrent Providers" action="RunPlugin(plugin://script.module.cocoscrapers/?action=ShowHelp&amp;name=torrentInfo)" />
-    <setting type="action" label="Disable All Torrent Providers" visible="false" action="RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAllTorrent&amp;setting=false)" />
-    <setting type="action" label="Enable Only Pack Capable Torrent Providers" visible="false" action="RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAllPackTorrent)" />
-    <setting type="action" label="[COLOR firebrick]-- torrent scraper Info --[/COLOR]" visible="false" action="RunPlugin(plugin://script.module.cocoscrapers/?action=ShowHelp&amp;name=torrentInfo)" />
-    <setting label="Websites" type="lsep" />
-    <setting id="provider.1337x" type="bool" label="$NUMBER[1337]X" default="false" />
-    <setting id="provider.bitsearch" type="bool" label="BITSEARCH (Pack capable)" default="false" />
-    <setting id="provider.eztv" type="bool" label="EZTV (Pack capable/Shows only)" default="false" />
-    <setting id="provider.kickass2" type="bool" label="KICKASS2 (Pack capable)" default="false" />
-    <setting id="provider.knaben" type="bool" label="KNABEN" default="false" />
-    <setting id="provider.nyaa" type="bool" label="NYAA" default="false" />
-    <setting id="provider.piratebay" type="bool" label="PIRATEBAY (Pack capable)" default="true" />
-    <setting id="provider.rutor" type="bool" label="RUTOR (Pack capable)" default="false" />
-    <setting id="provider.torlock" type="bool" label="TORLOCK" default="false" />
-    <setting id="provider.torrentdownload" type="bool" label="TORRENTDOWNLOAD (Pack capable)" default="true" />
-    <setting id="provider.torrentproject2" type="bool" label="TORRENTPROJECT2 (Pack capable)" default="false" />
-    <setting id="provider.torrentz2" type="bool" label="TORRENTZ2 (Pack capable)" default="false" />
-    <setting id="provider.ytsmx" type="bool" label="YTSMX (Movies only)" default="false" />
-    <setting label="Indexers" type="lsep" />
-    <setting id="provider.bitmagnet" type="bool" label="BITMAGNET (Pack capable)" default="false" />
-    <setting id="provider.comet" type="bool" label="COMET (Pack capable)" default="true" />
-        <setting id="comet.url" label="comet instance" type="enum" default="0" values="Kuu-lection|Midnightignite" subsetting="true" visible="eq(-1,true)" />
-    <setting id="provider.mediafusion" type="bool" label="MEDIAFUSION (Pack capable)" default="false" />
-        <setting id="mediafusion.url" label="mediafusion instance" type="enum" default="0" values="Kuu-lection|Midnightignite" subsetting="true" visible="eq(-1,true)" />
-    <setting id="provider.meteor" type="bool" label="METEOR (Pack capable)" default="true" />
-    <setting id="provider.torz" type="bool" label="STREMTHRU TORZ P2P (Pack capable)" default="false" />
-        <setting id="torz.url" label="torz instance" type="enum" default="0" values="Kuu-lection|Munif|Midnightignite" subsetting="true" visible="eq(-1,true)" />
-    <setting id="provider.torrentio" type="bool" label="TORRENTIO (Pack capable)" default="true" />
-    <setting id="provider.torrentsdb" type="bool" label="TORRENTSDB (Pack capable)" default="false" />
-    <setting id="provider.zilean" type="bool" label="ZILEAN (Pack capable)" default="true" />
-        <setting id="zilean.url" label="zilean instance" type="enum" default="0" values="Kuu-lection|Midnightignite" subsetting="true" visible="eq(-1,true)" />
-    <setting id="provider.dmm" type="bool" label="DMM (Pack capable)" default="false" />
-</category>
-
-<category label="Prowlarr/Torznab"> <!-- Indexers -->
-    <setting label="Prowlarr" type="lsep" />
-    <setting id="provider.prowlarr" type="bool" label="PROWLARR (Pack capable)" default="false" />
-        <setting id="prowlarr.token" type="text" label="PROWLARR apikey" subsetting="true" default="" visible="eq(-1,true)" />
-        <setting id="prowlarr.url" type="text" label="PROWLARR url" subsetting="true" default="" visible="eq(-2,true)" />
-    <setting label="TorBox" type="lsep" />
-    <setting id="provider.tbtorznab" type="bool" label="TORBOX Torznab (Pack capable)" default="false" />
-        <setting id="torbox.token" type="text" label="TORBOX apikey" subsetting="true" default="" visible="eq(-1,true)" />
-</category>
-
-<category label="Undesirables"> <!-- Undesirables -->
-    <setting id="filter.foreign.single.audio" type="bool" label="Remove identified Foreign single audio sources" default="true" />
-    <setting id="filter.undesirables" type="bool" label="Remove Undesirables" default="true" />
-        <setting type="action" label="Manage Default Undesirables" subsetting="true" enable="eq(-1,true)" action="RunPlugin(plugin://script.module.cocoscrapers/?action=undesirablesSelect)" />
-        <setting type="action" label="Define Extra Undesirables (Comma Separated)" subsetting="true" enable="eq(-2,true)" action="RunPlugin(plugin://script.module.cocoscrapers/?action=undesirablesInput)" />
-        <setting type="action" label="Remove Extra Undesirables" subsetting="true" enable="eq(-3,true)" action="RunPlugin(plugin://script.module.cocoscrapers/?action=undesirablesUserRemove)" />
-        <setting type="action" label="Clear ALL Extra Undesirables" subsetting="true" enable="eq(-4,true)" action="RunPlugin(plugin://script.module.cocoscrapers/?action=undesirablesUserRemoveAll)" />
-    <setting type="action" label="[COLOR firebrick]-- undesirables filter Help --[/COLOR]" action="RunPlugin(plugin://script.module.cocoscrapers/?action=ShowHelp&amp;name=undesirablesFilter)" />
-</category>
-
-<category label="Health"> <!-- Health -->
-    <setting type="action" label="Test All Torrent Providers" action="RunPlugin(plugin://script.module.cocoscrapers/?action=healthCheck)" />
-    <setting type="sep" />
-    <setting type="action" label="Clean Settings file" option="close" action="RunPlugin(plugin://script.module.cocoscrapers/?action=cleanSettings)" />
-    <setting type="action" label="Show Changelog" action="RunPlugin(plugin://script.module.cocoscrapers/?action=ShowChangelog)" />
-    <setting type="sep" />
-    <setting id="debug.enabled" type="bool" label="Enable Debug" default="false" />
-    <setting id="debug.location" type="enum" label="Logging Location" default="0" values="Kodi Log|Addon Log" enable="eq(-1,true)" />
-    <setting id="debug.reversed" type="bool" label="Write Cocoscrapers log in reverse order" default="false" visible="eq(-2,true)+eq(-1,1)" />
-    <setting type="action" label="Clear Cocoscrapers log file" visible="eq(-3,true)+eq(-2,1)" action="RunPlugin(plugin://script.module.cocoscrapers/?action=tools_clearLogFile)" />
-    <setting type="action" label="View Cocoscrapers log file" visible="eq(-4,true)+eq(-3,1)" action="RunPlugin(plugin://script.module.cocoscrapers/?action=tools_viewLogFile&amp;name=Cocoscrapers)" />
-    <setting type="action" label="Upload Cocoscrapers log file to pastebin" visible="eq(-5,true)+eq(-4,1)" action="RunPlugin(plugin://script.module.cocoscrapers/?action=tools_uploadLogFile)" />
-</category>
-
-<category label="AIOStreams"> <!-- AIOStreams -->
-    <setting label="Results" type="lsep" />
-    <setting id="provider.aiostreams" type="bool" label="" default="true" visible="false" />
-    <setting id="results.list_format" type="enum" label="Results Format" default="1" values="List|Wide List" />
-    <setting id="highlight.type" label="Result Hightlight Type" type="enum" default="1" values="Resolution|Single Color" />
-    <setting id="scraper_single_highlight" label="" type="text" default="dodgerblue" visible="false" />
-    <setting id="scraper_single_display" label="Single Color Hightlight" type="action" default="[COLOR FF1E90FF]dodgerblue[/COLOR]" action="RunPlugin(plugin://script.module.cocoscrapers/?action=ColorPick&amp;setting=scraper_single_highlight)" />
-    <setting id="scraper_4k_highlight" label="" type="text" default="magenta" visible="false" />
-    <setting id="scraper_4k_display" label="4K Color Hightlight" type="action" default="[COLOR FFFF00FF]magenta[/COLOR]" action="RunPlugin(plugin://script.module.cocoscrapers/?action=ColorPick&amp;setting=scraper_4k_highlight)" />
-    <setting id="scraper_1080p_highlight" label="" type="text" default="orange" visible="false"/>
-    <setting id="scraper_1080p_display" label="1080p Color Hightlight" type="action" default="[COLOR FFFFA500]orange[/COLOR]" action="RunPlugin(plugin://script.module.cocoscrapers/?action=ColorPick&amp;setting=scraper_1080p_highlight)" />
-    <setting id="scraper_720p_highlight" label="" type="text" default="blue" visible="false" />
-    <setting id="scraper_720p_display" label="720p Color Hightlight" type="action" default="[COLOR FF0000FF]blue[/COLOR]" action="RunPlugin(plugin://script.module.cocoscrapers/?action=ColorPick&amp;setting=scraper_720p_highlight)"/>
-    <setting id="scraper_SD_highlight" label="" type="text" default="green" visible="false" />
-    <setting id="scraper_SD_display" label="SD Color Hightlight" type="action" default="[COLOR FF008000]green[/COLOR]" action="RunPlugin(plugin://script.module.cocoscrapers/?action=ColorPick&amp;setting=scraper_SD_highlight)" />
-    <setting id="scraping_timeout" type="number" label="Scraping Timeout" default="30" />
-    <setting label="Setup" type="lsep" />
-    <setting id="aiostreams_instance" type="enum" label="Provider" default="0" values="Kuu|Custom|Viren|Yeb|Midnight" enable="true" />
-    <setting id="aio.ku_url" type="text" label="Url" default="https://aiostreams.stremio.ru" enable="false" visible="eq(-1,0)" />
-    <setting id="aio.custom_url" type="text" label="Url" default="" visible="eq(-2,1)" />
-    <setting id="aio.viren_url" type="text" label="Url" default="https://aiostreams.viren070.me" enable="false" visible="eq(-3,2)" />
-    <setting id="aio.yeb_url" type="text" label="Url" default="https://aiostreams.fortheweak.cloud" enable="false" visible="eq(-4,3)" />
-    <setting id="aio.midnight_url" type="text" label="Url" default="https://aiostreamsfortheweebsstable.midnightignite.me" enable="false" visible="eq(-5,4)" />
-    <setting id="aio.username" type="text" label="Username" default="" />
-    <setting id="aio.password" type="text" label="Password" default="" />
-</category>
-
+<?xml version="1.0" ?>
+<settings version="1">
+	<section id="script.module.cocoscrapers">
+		<category id="general" label="32050" help="32350">
+			<group id="1">
+				<setting id="module.provider" type="action" label="32005" help="">
+					<level>0</level>
+					<default>CocoScrapers</default>
+					<dependencies>
+						<dependency type="enable">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+						<dependency type="visible">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="toggle"></control>
+				</setting>
+				<setting id="defaultHelp" type="action" label="32006" help="32531">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=Defaults&amp;setting=true)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="toggleAllFalseButton" type="action" label="32007" help="32532">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAll&amp;setting=false)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="toggleAllTrueButton" type="action" label="32008" help="32533">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAll&amp;setting=true)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+			</group>
+			<group id="2">
+				<setting id="cleanSettingsButton" type="action" label="32041" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=cleanSettings)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="showChangeLogButton" type="action" label="32009" help="32534">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=ShowChangelog)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+			</group>
+		</category>
+		<category id="premium hosters" label="32051" help="32537">
+			<group id="1">
+				<setting id="toggleAllHostersOff" type="action" label="32011" help="32535">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAllHosters&amp;setting=false)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="toggleAllHostersOn" type="action" label="32012" help="32536">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAllHosters&amp;setting=true)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+			</group>
+			<group id="2">
+				<setting id="provider.300mbfilms" type="boolean" label="32062" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.myvideolink" type="boolean" label="32072" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.rapidmoviez" type="boolean" label="32082" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.rlsbb" type="boolean" label="32075" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.scenerls" type="boolean" label="32076" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+			</group>
+			<group id="3" label="Plexshare">
+				<setting id="provider.plexshare" type="boolean" label="32515" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="plex.token" type="string" label="32518" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32518</heading>
+						<hidden>true</hidden>
+					</control>
+				</setting>
+				<setting id="plex.client_id" type="string" label="32519" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+						<dependency type="visible">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32519</heading>
+						<hidden>true</hidden>
+					</control>
+				</setting>
+				<setting id="plex.device_id" type="string" label="32520" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+						<dependency type="visible">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32520</heading>
+						<hidden>true</hidden>
+					</control>
+				</setting>
+				<setting id="plexshare.sourceTitle" type="string" label="32521" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+						<dependency type="visible">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32521</heading>
+					</control>
+				</setting>
+				<setting id="plexshare.accessToken" type="string" label="32522" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+						<dependency type="visible">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32522</heading>
+						<hidden>true</hidden>
+					</control>
+				</setting>
+				<setting id="plexshare.url" type="string" label="32523" help="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+						<dependency type="visible">
+							<condition on="property" name="InfoBool">false</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32523</heading>
+						<hidden>true</hidden>
+					</control>
+				</setting>
+				<setting id="plexAuthButton" type="action" label="32524" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=plexAuth)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<or>
+								<condition operator="is" setting="plex.device_id"/>
+								<condition operator="is" setting="plex.client_id"/>
+								<condition operator="is" setting="plex.token"/>
+							</or>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action">
+						<close>true</close>
+					</control>
+				</setting>
+				<setting id="plexSeeActiveShares" type="action" label="32544" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=plexSeeShare)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="!is" setting="plex.token"/>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action">
+					</control>
+				</setting>
+				<setting id="plexSelectShareButton" type="action" label="32526" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=plexSelectShare)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="!is" setting="plex.token"/>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action">
+						<close>true</close>
+					</control>
+				</setting>
+				<setting id="plexRevokeButton" type="action" label="32525" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=plexRevoke)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<or>
+								<condition operator="!is" setting="plex.device_id"/>
+								<condition operator="!is" setting="plex.client_id"/>
+								<condition operator="!is" setting="plex.token"/>
+							</or>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action">
+						<close>true</close>
+					</control>
+				</setting>
+			</group>
+			<group id="4" label="32044">
+				<setting id="provider.easynews" type="boolean" label="32065" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="easynews.user" type="string" label="32018" help="" parent="provider.easynews">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.easynews">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32018</heading>
+					</control>
+				</setting>
+				<setting id="easynews.password" type="string" label="32019" help="" parent="provider.easynews">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.easynews">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32019</heading>
+					</control>
+				</setting>
+				<setting id="easynews.moderation" type="boolean" label="32527" help="" parent="provider.easynews">
+					<level>0</level>
+					<default>false</default>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.easynews">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="toggle"/>
+				</setting>
+				<setting id="easynews.title.chk" type="boolean" label="32083" help="" parent="provider.easynews">
+					<level>0</level>
+					<default>true</default>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.easynews">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="toggle"/>
+				</setting>
+				<setting id="easyNewsTitleCheckButton" type="action" label="32001" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=ShowHelp&amp;name=EasyNews_titleCheck)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="easynews.password">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="provider.gdrive" type="boolean" label="32081" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="gdrive.title.chk" type="boolean" label="32083" help="" parent="provider.gdrive">
+					<level>0</level>
+					<default>true</default>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.gdrive">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="toggle"/>
+				</setting>
+				<setting id="googleDriveTitleCheck" type="action" label="32001" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=ShowHelp&amp;name=gdrive_titleCheck)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.gdrive">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="gdrive.cloudflare_url" type="string" label="32039" help="" parent="">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition on="property" name="InfoBool">true</condition>
+						</dependency>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.gdrive">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32039</heading>
+					</control>
+				</setting>
+				<setting id="googleDriveSetupHelp" type="action" label="32517" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=ShowHelp&amp;name=gdrive_setupHelp)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.gdrive">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="provider.furk" type="boolean" label="32068" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="furk.user_name" type="string" label="32018" help="" parent="provider.furk">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.furk">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32018</heading>
+					</control>
+				</setting>
+				<setting id="furk.user_pass" type="string" label="32019" help="" parent="provider.furk">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.furk">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32019</heading>
+						<hidden>true</hidden>
+					</control>
+				</setting>
+				<setting id="furk.api" type="string" label="32022" help="" parent="provider.furk">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.furk">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32022</heading>
+					</control>
+				</setting>
+				<setting id="provider.filepursuit" type="boolean" label="32066" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="filepursuit.api" type="string" label="32053" help="" parent="provider.filepursuit">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<condition operator="is" setting="provider.filepursuit">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="edit" format="string">
+						<heading>32053</heading>
+					</control>
+				</setting>
+			</group>
+			<group id="5" label="32045">
+				<setting id="provider.library" type="boolean" label="32070" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+			</group>
+		</category>
+		<category id="torrents" label="32052" help="32538">
+			<group id="1">
+				<setting id="torrentInfoButton" type="action" label="32040" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=ShowHelp&amp;name=torrentInfo)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="toggleAllTorrentOff" type="action" label="32013" help="32539">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAllTorrent&amp;setting=false)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="toggleAllTorrentOn" type="action" label="32014" help="32540">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAllTorrent&amp;setting=true)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="toggleAllPackTorrent" type="action" label="32015" help="32541">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=toggleAllPackTorrent&amp;setting=true)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+			</group>
+			<group id="2">
+				<setting id="filter.undesirables" type="boolean" label="32016" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="undesirables.settings1" type="action" label="32046" help="" parent="filter.undesirables">
+					<level>0</level>
+					<dependencies>
+						<dependency type="enable">
+							<condition operator="is" setting="filter.undesirables">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action">
+						<data>RunPlugin(plugin://script.module.cocoscrapers/?action=undesirablesSelect)</data>
+					</control>
+				</setting>
+				<setting id="undesirables.settings2" type="string" label="32048" help="" parent="filter.undesirables">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition operator="is" setting="filter.undesirables">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action">
+						<data>RunPlugin(plugin://script.module.cocoscrapers/?action=undesirablesInput)</data>
+					</control>
+				</setting>
+				<setting id="undesirables.settings3" type="string" label="32049" help="" parent="filter.undesirables">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition operator="is" setting="filter.undesirables">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action">
+						<data>RunPlugin(plugin://script.module.cocoscrapers/?action=undesirablesUserRemove)</data>
+					</control>
+				</setting>
+				<setting id="undesirables.settings4" type="string" label="32140" help="" parent="filter.undesirables">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition operator="is" setting="filter.undesirables">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action">
+						<data>RunPlugin(plugin://script.module.cocoscrapers/?action=undesirablesUserRemoveAll)</data>
+					</control>
+				</setting>
+				<setting id="undesireablesFilterHelp" type="action" label="32003" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=ShowHelp&amp;name=undesirablesFilter)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="filter.foreign.single.audio" type="boolean" label="32017" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+			</group>
+			<group id="3">
+				<setting id="provider.1337x" type="boolean" label="32101" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.bitcq" type="boolean" label="32137" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.bitlord" type="boolean" label="32103" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.bitsearch" type="boolean" label="32138" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.ext" type="boolean" label="32131" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.extratorrent" type="boolean" label="32106" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.eztv" type="boolean" label="32107" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.glodls" type="boolean" label="32108" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.ibit" type="boolean" label="32543" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.isohunt2" type="boolean" label="32110" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.kickass2" type="boolean" label="32111" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.limetorrents" type="boolean" label="32112" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.magnetdl" type="boolean" label="32114" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.nyaa" type="boolean" label="32116" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.piratebay" type="boolean" label="32117" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.torlock" type="boolean" label="32121" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.torrentapi" type="boolean" label="32122" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.torrentdownload" type="boolean" label="32123" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.torrentfunk" type="boolean" label="32124" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.torrentgalaxy" type="boolean" label="32125" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.torrentio" type="boolean" label="32139" help="">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.torrentproject2" type="boolean" label="32136" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.torrentz2" type="boolean" label="32130" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.yourbittorrent" type="boolean" label="32126" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="provider.ytsmx" type="boolean" label="32127" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+			</group>
+		</category>
+		<category id="debug" label="32054" help="">
+			<group id="1">
+				<setting id="debug.enabled" type="boolean" label="32033" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="debug.location" type="integer" label="32034" help="">
+					<level>0</level>
+					<default>1</default>
+					<constraints>
+						<options>
+							<option label="32035">0</option>
+							<option label="32036">1</option>
+						</options>
+					</constraints>
+					<dependencies>
+						<dependency type="enable">
+							<condition operator="is" setting="debug.enabled">true</condition>
+						</dependency>
+					</dependencies>
+					<control type="spinner" format="string"/>
+				</setting>
+				<setting id="debug.reversed" type="boolean" label="32055" help="">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting id="clearLogFileButton" type="action" label="32056" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=tools_clearLogFile)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<and>
+								<condition operator="is" setting="debug.enabled">true</condition>
+								<condition operator="is" setting="debug.location">1</condition>
+							</and>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="viewLogFileButton" type="action" label="32057" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=tools_viewLogFile&amp;name=CocoScrapers)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<and>
+								<condition operator="is" setting="debug.enabled">true</condition>
+								<condition operator="is" setting="debug.location">1</condition>
+							</and>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action"/>
+				</setting>
+				<setting id="uploadLogFileButton" type="action" label="32058" help="">
+					<level>0</level>
+					<data>RunPlugin(plugin://script.module.cocoscrapers/?action=tools_uploadLogFile)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<dependencies>
+						<dependency type="visible">
+							<and>
+								<condition operator="is" setting="debug.enabled">true</condition>
+								<condition operator="is" setting="debug.location">1</condition>
+							</and>
+						</dependency>
+					</dependencies>
+					<control type="button" format="action"/>
+				</setting>
+			</group>
+		</category>
+	</section>
 </settings>

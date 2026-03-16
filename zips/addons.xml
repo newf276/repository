@@ -1,31 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="plugin.video.fenlight" name="FenLightAM" provider-name="AnonyMouse" version="2.1.86">
-    <requires>
-        <import addon="xbmc.python" version="3.0.0"/>
-        <import addon="script.module.pil" version="1.1.7"/>
-        <import addon="script.module.requests" version="2.19.1"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="resources/lib/fenlight.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.service" library="resources/lib/service.py"/>
-    <extension point="xbmc.python.module" library="resources/lib/"/>
-    <extension point="xbmc.addon.metadata">
-        <reuselanguageinvoker>true</reuselanguageinvoker>
-        <summary lang="en">Access your content from Easynews and Debrid Clouds.</summary>
-        <description lang="en">This add-on is intended for advanced Kodi users only. You must own the content of any media you play through this addon. This is an English language only add-on.</description>
-        <platform>all</platform>
-		<disclaimer lang="en">The author of this addon does not host any of the content which is found and has no affiliation with any of the content providers.</disclaimer>
-        <license/>
-        <assets>
-            <icon>resources/media/addon_icons/fenlight_icon_01.png</icon>
-            <fanart>resources/media/fenlight_fanart_01.jpg</fanart>
-        </assets>
-        <news>INFO: For latest changes see Changelog within Tools of add-on.</news>
-    </extension>
-</addon>
-
 <addon id="skin.finder" version="7.4.0" name="[COLOR dodgerblue]Finder[/COLOR] Skin" provider-name="Newf276">
 	<requires>
 		<import addon="xbmc.gui" version="5.17.0"/>
@@ -1440,30 +1414,23 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.finder" name="Finder" provider-name="Newf276,AnonyMouse" version="7.1.82">
-    <requires>
-        <import addon="xbmc.python" version="3.0.0"/>
-        <import addon="script.module.pil" version="1.1.7"/>
-        <import addon="script.module.requests" version="2.19.1"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="resources/lib/finder.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.service" library="resources/lib/service.py"/>
-    <extension point="xbmc.python.module" library="resources/lib/"/>
-    <extension point="xbmc.addon.metadata">
-        <reuselanguageinvoker>true</reuselanguageinvoker>
-        <summary lang="en">Access your content from Easynews and Debrid Clouds.</summary>
-        <description lang="en">This add-on is intended for advanced Kodi users only. You must own the content of any media you play through this addon. This is an English language only add-on.</description>
-        <platform>all</platform>
-		<disclaimer lang="en">The author of this addon does not host any of the content which is found and has no affiliation with any of the content providers.</disclaimer>
-        <license/>
-        <assets>
-            <icon>resources/media/addon_icons/finder_icon_01.png</icon>
-            <fanart>resources/media/finder_fanart_01.jpg</fanart>
-        </assets>
-        <news>INFO: For latest changes see Changelog within Tools of add-on.</news>
-    </extension>
+<addon id="script.module.cocoscrapers" name="CocoScrapers Module" version="10.0.32" provider-name="Newf276,CocoJoe">
+	<requires>
+		<import addon="xbmc.python" version="3.0.0" />
+		<import addon="script.module.requests" />
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="lib/router.py">
+		<provides>executable</provides>
+	</extension>
+	<extension point="xbmc.service" library="lib/service.py" />
+	<extension point="xbmc.python.module" library="lib" />
+	<extension point="xbmc.addon.metadata">
+		<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+		<summary>Cocoscrapers Module</summary>
+		<description>A module to query magnet providers.[CR][CR]This is a Non-profit resource, organized solely for educational purposes which is protected under the Fair-Use doctrine of the Copyright Act, Specifically section 107, which does promote freedom of expression, by permitting the unlicensed use of copyright-protected works.</description>
+		<disclaimer>The author does not host or own any content found within this addon. The author is not responsible for the content found using this addon. The author is not responsible for the use of this addon.</disclaimer>
+		<assets><icon>resources/cocoscrapers.png</icon></assets>
+	</extension>
 </addon>
 
 <addon id="script.kodi.apk" name="[COLOR dodgerblue]Newf's[/COLOR]Kodi APK Installer" version="1.0.1" provider-name="Newf276">

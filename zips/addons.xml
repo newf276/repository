@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="plugin.video.fenlight" name="FenLightAM" provider-name="AnonyMouse" version="2.1.84">
+<addon id="plugin.video.fenlight" name="FenLightAM" provider-name="AnonyMouse" version="2.1.86">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.pil" version="1.1.7"/>
@@ -442,9 +442,9 @@
 </addon>
 
 <addon id="plugin.video.cbc"
-       name="[COLOR dodgerblue]CBC[/COLOR] (Canadian Broadcasting Corporation)"
-       version="8.1.22+matrix.1"
-       provider-name="newf276,micahg,t1m,smf007,oshanrube,jgaudet">
+       name="[COLOR dodgerblue]Canadian Broadcasting Corp [/COLOR]"
+       version="8.2.23+matrix.1"
+       provider-name="micahg,t1m,smf007,oshanrube,jgaudet">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.requests" version="2.22.0"/>
@@ -471,7 +471,10 @@
     <website>https://watch.cbc.ca/</website>
     <source>https://github.com/micahg/plugin.video.cbc</source>
     <news>
-      - Fixed Categories, they now display proper content.
+      - Add back missing live channels
+      - Better live event handling
+      - Better EPG error handling
+      - Remove dead code and fix match bug
     </news>
   </extension>
 </addon>

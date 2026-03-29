@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.xumoplay" version="2025.01.06" name="[COLOR dodgerblue]Xumo TV[/COLOR]"  provider-name="Newf276">
+<addon id="plugin.video.xumoplay" version="1.0.0" name="[B]Xumo TV[/B]" provider-name="Newf276">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.requests" version="2.9.1"/>

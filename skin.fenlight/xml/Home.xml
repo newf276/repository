@@ -59,22 +59,16 @@
 							<param name="list_id" value="5900"/>
 						</include>
 						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.fenlight/?action=tmdb_movies_latest_releases&amp;iconImage=https%3a%2f%2fraw.githubusercontent.com%2fFenlightAnonyMouse%2fFenlightAnonyMouse.github.io%2fmain%2fpackages%2fmedia%2ficons%2fdvd.png&amp;menu_type=movie&amp;mode=random.build_movie_list&amp;name=Movies%20Random%20Latest%20Releases&amp;random=true&amp;random_support=true"/>
-							<param name="widget_header" value="Random Latest"/>
+							<param name="content_path" value="plugin://plugin.video.fenlight/?list_name=Top%20Movies%20of%20the%20week&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=top-movies-of-the-week&amp;user=garycrawfordgc"/>
+							<param name="widget_header" value="Weekly Top Movies"/>
 							<param name="widget_target" value="videos"/>
 							<param name="list_id" value="5100"/>
 						</include>
 						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.fenlight/?iconImage=https%3a%2f%2fraw.githubusercontent.com%2fFenlightAnonyMouse%2fFenlightAnonyMouse.github.io%2fmain%2fpackages%2fmedia%2ficons%2ftmdb.png&amp;list_id=recommendations&amp;list_name=Movie%20Recommendations&amp;media_type=movie&amp;mode=tmdblist.build_tmdb_list"/>
-							<param name="widget_header" value="Recommended"/>
+							<param name="content_path" value="plugin://plugin.video.fenlight/?list_name=Latest%20Releases&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=latest-releases&amp;user=giladg"/>
+							<param name="widget_header" value="Latest Releases"/>
 							<param name="widget_target" value="videos"/>
 							<param name="list_id" value="5200"/>
-						</include>
-						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.fenlight/?action=tmdb_movies_oscar_winners&amp;iconImage=https%3a%2f%2fraw.githubusercontent.com%2fFenlightAnonyMouse%2fFenlightAnonyMouse.github.io%2fmain%2fpackages%2fmedia%2ficons%2foscar_winners.png&amp;menu_type=movie&amp;mode=random.build_movie_list&amp;name=Movies%20Random%20Oscar%20Winners&amp;random=true&amp;random_support=true"/>
-							<param name="widget_header" value="Random Oscars"/>
-							<param name="widget_target" value="videos"/>
-							<param name="list_id" value="5300"/>
 						</include>
 					</control>
 					<include content="WidgetScrollbar" condition="Skin.HasSetting(touchmode)">
@@ -105,16 +99,10 @@
 							<param name="list_id" value="6100"/>
 						</include>
 						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.fenlight/?iconImage=https%3a%2f%2fraw.githubusercontent.com%2fFenlightAnonyMouse%2fFenlightAnonyMouse.github.io%2fmain%2fpackages%2fmedia%2ficons%2ftmdb.png&amp;list_id=recommendations&amp;list_name=TV%20Show%20Recommendations&amp;media_type=tv&amp;mode=tmdblist.build_tmdb_list"/>
-							<param name="widget_header" value="Recommended"/>
-							<param name="widget_target" value="videos"/>
-							<param name="list_id" value="6200"/>
-						</include> 
-						<include content="WidgetListPoster">
 							<param name="content_path" value="plugin://plugin.video.fenlight/?list_name=Apple%20TV%2b%20Top%2010%20TV%20Shows&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=latest-tv-shows&amp;user=garycrawfordgc"/>
 							<param name="widget_header" value="Latest Shows"/>
 							<param name="widget_target" value="videos"/>
-							<param name="list_id" value="6300"/>
+							<param name="list_id" value="6200"/>
 						</include> 
 					</control>
 					<include content="WidgetScrollbar" condition="Skin.HasSetting(touchmode)">
@@ -877,7 +865,7 @@
 					<content>
 	                        <item>
 							<label>$LOCALIZE[20343]</label>
-							<onclick>ActivateWindow(Videos,"plugin://plugin.video.fenlight/?iconImage=https%3a%2f%2fraw.githubusercontent.com%2fFenlightAnonyMouse%2fFenlightAnonyMouse.github.io%2fmain%2fpackages%2fmedia%2ficons%2ftmdb.png&amp;list_id=watchlist&amp;list_name=TV%20Show%20Watchlist&amp;media_type=tv&amp;mode=tmdblist.build_tmdb_list",return)</onclick>
+							<onclick>ActivateWindow(Videos,"plugin://plugin.video.fenlight/?action=trakt_collection&mode=build_tvshow_list",return)</onclick>
 							<property name="menu_id">$NUMBER[6000]</property>
 							<thumb>icons/sidemenu/tv.png</thumb>
 							<property name="id">tvshows</property>
@@ -885,7 +873,7 @@
 						</item>
     				    <item>
 							<label>$LOCALIZE[342]</label>
-                            <onclick>ActivateWindow(Videos,"plugin://plugin.video.fenlight/?iconImage=https%3a%2f%2fraw.githubusercontent.com%2fFenlightAnonyMouse%2fFenlightAnonyMouse.github.io%2fmain%2fpackages%2fmedia%2ficons%2ftmdb.png&amp;list_id=watchlist&amp;list_name=Movie%20Watchlist&amp;media_type=movie&amp;mode=tmdblist.build_tmdb_list",return)</onclick>
+                            <onclick>ActivateWindow(Videos,"plugin://plugin.video.fenlight/?action=trakt_collection&mode=build_movie_list",return)</onclick>
 							<property name="menu_id">$NUMBER[5000]</property>
 							<thumb>icons/sidemenu/movies.png</thumb>
 							<property name="id">movies</property>

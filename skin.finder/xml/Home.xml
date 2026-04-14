@@ -59,16 +59,22 @@
 							<param name="list_id" value="5900"/>
 						</include>
 						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.fenlight/?list_name=Top%20Movies%20of%20the%20week&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=top-movies-of-the-week&amp;user=garycrawfordgc"/>
-							<param name="widget_header" value="Weekly Top Movies"/>
+							<param name="content_path" value="plugin://plugin.video.finder/?list_name=Top%20Movies%20of%20the%20week&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=top-movies-of-the-week&amp;user=garycrawfordgc"/>
+							<param name="widget_header" value="Top 10 Apple TV+"/>
 							<param name="widget_target" value="videos"/>
 							<param name="list_id" value="5100"/>
 						</include>
 						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.fenlight/?list_name=Latest%20Releases&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=latest-releases&amp;user=giladg"/>
-							<param name="widget_header" value="Latest Releases"/>
+							<param name="content_path" value="plugin://plugin.video.finder/?iconImage=trakt&amp;list_id=28378515&amp;list_name=apple-tv-top-10-movies&amp;list_type=liked_lists&amp;mode=trakt.list.build_trakt_list&amp;name=apple-tv-top-10-movies&amp;slug=apple-tv-top-10-movies&amp;sort_by=rank&amp;sort_how=asc&amp;user=leendert-p"/>
+							<param name="widget_header" value="Top 10 Apple TV"/>
 							<param name="widget_target" value="videos"/>
 							<param name="list_id" value="5200"/>
+						</include>
+						<include content="WidgetListPoster">
+							<param name="content_path" value="plugin://plugin.video.finder/?iconImage=trakt&amp;list_id=25765631&amp;list_name=top%2010%20amazon%20prime%20movies&amp;list_type=liked_lists&amp;mode=trakt.list.build_trakt_list&amp;name=top%2010%20amazon%20prime%20movies&amp;slug=top-10-amazon-prime-movies&amp;sort_by=rank&amp;sort_how=asc&amp;user=bassettmason"/>
+							<param name="widget_header" value="Top 10 Amazon Prime"/>
+							<param name="widget_target" value="videos"/>
+							<param name="list_id" value="5300"/>
 						</include>
 					</control>
 					<include content="WidgetScrollbar" condition="Skin.HasSetting(touchmode)">
@@ -91,7 +97,7 @@
 							<param name="list_id" value="6900"/>
 						</include>
                         <include content="WidgetListEpisodes">
-							<param name="content_path" value="plugin://plugin.video.fenlight/?iconImage=next_episodes&mode=build_next_episode&name=32483"/>
+							<param name="content_path" value="plugin://plugin.video.finder/?iconImage=next_episodes&mode=build_next_episode&name=32483"/>
                             <param name="sortby" value="recentlyplayed"/>
 							<param name="sortorder" value="ascending"/>
 							<param name="widget_header" value="Next Episode"/>
@@ -99,10 +105,16 @@
 							<param name="list_id" value="6100"/>
 						</include>
 						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.fenlight/?list_name=Apple%20TV%2b%20Top%2010%20TV%20Shows&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=latest-tv-shows&amp;user=garycrawfordgc"/>
-							<param name="widget_header" value="Latest Shows"/>
+							<param name="content_path" value="plugin://plugin.video.finder/?iconImage=trakt&amp;list_id=29895417&amp;list_name=Top%2010%20Movies%20-%20Apple%20TV%2b&amp;list_type=liked_lists&amp;mode=trakt.list.build_trakt_list&amp;name=Top%2010%20Movies%20-%20Apple%20TV%2b&amp;slug=top-10-movies-apple-tv&amp;sort_by=rank&amp;sort_how=asc&amp;user=unclemozilla"/>
+							<param name="widget_header" value="Top 10 Apple TV+"/>
 							<param name="widget_target" value="videos"/>
 							<param name="list_id" value="6200"/>
+						</include>
+						<include content="WidgetListPoster">
+							<param name="content_path" value="plugin://plugin.video.finder/?iconImage=trakt&amp;list_id=29395492&amp;list_name=Netflix%20Top%2010%20Shows&amp;list_type=liked_lists&amp;mode=trakt.list.build_trakt_list&amp;name=Netflix%20Top%2010%20Shows&amp;slug=netflix-top-10-shows&amp;sort_by=rank&amp;sort_how=asc&amp;user=diimaan"/>
+							<param name="widget_header" value="Top 10 Netflix"/>
+							<param name="widget_target" value="videos"/>
+							<param name="list_id" value="6300"/>
 						</include> 
 					</control>
 					<include content="WidgetScrollbar" condition="Skin.HasSetting(touchmode)">
@@ -865,7 +877,7 @@
 					<content>
 	                        <item>
 							<label>$LOCALIZE[20343]</label>
-							<onclick>ActivateWindow(Videos,"plugin://plugin.video.fenlight/?action=trakt_collection&mode=build_tvshow_list",return)</onclick>
+							<onclick>ActivateWindow(Videos,"plugin://plugin.video.finder/?action=trakt_collection&mode=build_tvshow_list",return)</onclick>
 							<property name="menu_id">$NUMBER[6000]</property>
 							<thumb>icons/sidemenu/tv.png</thumb>
 							<property name="id">tvshows</property>
@@ -873,7 +885,7 @@
 						</item>
     				    <item>
 							<label>$LOCALIZE[342]</label>
-                            <onclick>ActivateWindow(Videos,"plugin://plugin.video.fenlight/?action=trakt_collection&mode=build_movie_list",return)</onclick>
+                            <onclick>ActivateWindow(Videos,"plugin://plugin.video.finder/?action=trakt_collection&mode=build_movie_list",return)</onclick>
 							<property name="menu_id">$NUMBER[5000]</property>
 							<thumb>icons/sidemenu/movies.png</thumb>
 							<property name="id">movies</property>

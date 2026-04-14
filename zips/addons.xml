@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="plugin.program.cleaner" name="[COLOR dodgerblue]Newf's[/COLOR] Wizard" version="3.5.0" provider-name="Newf276">
+<addon id="plugin.program.cleaner" name="[COLOR dodgerblue]Newf's[/COLOR] Wizard" version="3.6.0" provider-name="Newf276">
     <requires>
         script.kodi.android.update
         <import addon="xbmc.python" version="3.0.0" />

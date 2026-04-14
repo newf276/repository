@@ -59,13 +59,13 @@
 							<param name="list_id" value="5900"/>
 						</include>
 						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.finder/?list_name=Top%20Movies%20of%20the%20week&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=top-movies-of-the-week&amp;user=garycrawfordgc"/>
+							<param name="content_path" value="plugin://plugin.video.fenlight/?list_name=Top%20Movies%20of%20the%20week&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=top-movies-of-the-week&amp;user=garycrawfordgc"/>
 							<param name="widget_header" value="Weekly Top Movies"/>
 							<param name="widget_target" value="videos"/>
 							<param name="list_id" value="5100"/>
 						</include>
 						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.finder/?list_name=Latest%20Releases&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=latest-releases&amp;user=giladg"/>
+							<param name="content_path" value="plugin://plugin.video.fenlight/?list_name=Latest%20Releases&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=latest-releases&amp;user=giladg"/>
 							<param name="widget_header" value="Latest Releases"/>
 							<param name="widget_target" value="videos"/>
 							<param name="list_id" value="5200"/>
@@ -91,7 +91,7 @@
 							<param name="list_id" value="6900"/>
 						</include>
                         <include content="WidgetListEpisodes">
-							<param name="content_path" value="plugin://plugin.video.finder/?iconImage=next_episodes&mode=build_next_episode&name=32483"/>
+							<param name="content_path" value="plugin://plugin.video.fenlight/?iconImage=next_episodes&mode=build_next_episode&name=32483"/>
                             <param name="sortby" value="recentlyplayed"/>
 							<param name="sortorder" value="ascending"/>
 							<param name="widget_header" value="Next Episode"/>
@@ -99,7 +99,7 @@
 							<param name="list_id" value="6100"/>
 						</include>
 						<include content="WidgetListPoster">
-							<param name="content_path" value="plugin://plugin.video.finder/?list_name=Apple%20TV%2b%20Top%2010%20TV%20Shows&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=latest-tv-shows&amp;user=garycrawfordgc"/>
+							<param name="content_path" value="plugin://plugin.video.fenlight/?list_name=Apple%20TV%2b%20Top%2010%20TV%20Shows&amp;list_type=user_lists&amp;mode=trakt.list.build_trakt_list&amp;slug=latest-tv-shows&amp;user=garycrawfordgc"/>
 							<param name="widget_header" value="Latest Shows"/>
 							<param name="widget_target" value="videos"/>
 							<param name="list_id" value="6200"/>
@@ -865,7 +865,7 @@
 					<content>
 	                        <item>
 							<label>$LOCALIZE[20343]</label>
-							<onclick>ActivateWindow(Videos,"plugin://plugin.video.finder/?action=trakt_collection&mode=build_tvshow_list",return)</onclick>
+							<onclick>ActivateWindow(Videos,"plugin://plugin.video.fenlight/?action=trakt_collection&mode=build_tvshow_list",return)</onclick>
 							<property name="menu_id">$NUMBER[6000]</property>
 							<thumb>icons/sidemenu/tv.png</thumb>
 							<property name="id">tvshows</property>
@@ -873,7 +873,7 @@
 						</item>
     				    <item>
 							<label>$LOCALIZE[342]</label>
-                            <onclick>ActivateWindow(Videos,"plugin://plugin.video.finder/?action=trakt_collection&mode=build_movie_list",return)</onclick>
+                            <onclick>ActivateWindow(Videos,"plugin://plugin.video.fenlight/?action=trakt_collection&mode=build_movie_list",return)</onclick>
 							<property name="menu_id">$NUMBER[5000]</property>
 							<thumb>icons/sidemenu/movies.png</thumb>
 							<property name="id">movies</property>

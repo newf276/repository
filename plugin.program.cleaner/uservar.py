@@ -110,7 +110,7 @@ REPOZIPURL = 'https://github.com/newf276/repository/raw/master/zips/repository.n
 # Enable Notification screen Yes or No
 ENABLE = 'Yes'
 # Url to notification file
-NOTIFICATION = 'https://github.com/newf276/wizard/raw/master/notify.txt'
+NOTIFICATION = 'https://github.com/newf276/junk/raw/master/wizard/notify.txt'
 # Use either 'Text' or 'Image'
 HEADERTYPE = 'Text'
 # Font size of header

@@ -457,8 +457,8 @@
 </addon>
 
 <addon id="plugin.video.cbc"
-       name="[B]CBC[/B]"
-       version="4.3.23+matrix.1"
+       name="[B]Canadian Broadcasting Corp [/B]"
+       version="4.0.23+matrix.1"
        provider-name="micahg,t1m,smf007,oshanrube,jgaudet">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>

@@ -1,0 +1,42 @@
+Simple Wizard — Getting started
+
+Quick start (setup your own wizard build installer):
+
+1. Unzip the distribution and rename the folder to the addon ID you want (example: `plugin.program.mywizard`).
+
+2. Edit `addon.xml`: set the `id` to match the folder name and update `name`, `provider-name`, `summary` and `description` as desired.
+
+3. Replace `resources/icon.png` and `resources/fanart.jpg` with your artwork (keep the filenames the same).
+
+4. Edit the builds file. You may use XML or JSON:
+   - XML: `resources/texts/builds.xml` is the default; a template is provided at `resources/texts/builds.example.xml`.
+   - JSON: you can also use `resources/texts/builds.json` if you prefer (keep the same structure as the XML template).
+   - You can rename the file and host it wherever you like, just be sure to keep the element/tag structure or dictionary format intact.  
+   Sample XML structure:
+     ```xml
+     <builds>
+       <build>
+         <name>Build 1</name>
+         <version>1.0</version>
+         <kodi>K21</kodi>
+         <url>http://</url>
+         <icon>http://</icon>
+         <fanart>http://</fanart>
+         <description>Brief description of the build.</description>
+         <preview>http://</preview>
+       </build>
+       <!-- additional <build> entries -->
+     </builds>
+     ```
+   - XML is more user friendly; JSON is more efficient. Choose whichever you're comfortable with.
+
+5. Edit `uservar.py` and set `BUILD_URL` (or equivalent variable) to the public URL where you host your build file. Save.
+
+6. Optional: pick an advancedsettings preset from `resources/advancedsettings/` (`nexus`, `omega` or `piers`) and host/use it as needed.
+
+7. Zip the `plugin.program.mywizard` folder and install the addon in Kodi via "Install from zip file".
+
+Notes:
+- The wizard fetches the remote builds file over HTTP(S) and displays installers; the file must be reachable.
+- Keep the example files in `resources/texts/` as templates for future changes.
+- For contributors: see `README.md` for more details and examples.

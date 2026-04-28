@@ -1,31 +1,35 @@
-[COLOR dodgerblue][B]Version 2.1.97[/B][/COLOR]
+
+[COLOR dodgerblue][B]Version 7.1.98[/B][/COLOR]
+- Quick fix for "Add to Cloud" not appearing in context menu of results.
+
+[COLOR dodgerblue][B]Version 7.1.97[/B][/COLOR]
 - Removed Easydebrid support (dead service).
 - Other changes/fixes.
 
-[COLOR dodgerblue][B]Version 2.1.96[/B][/COLOR]
+[COLOR dodgerblue][B]Version 7.1.96[/B][/COLOR]
 - Settings->Results->Rescrape priority settings will need to be re-set.
 - Other changes/fixes.
 
-[COLOR dodgerblue][B]Version 2.1.95[/B][/COLOR]
+[COLOR dodgerblue][B]Version 7.1.95[/B][/COLOR]
 - Added Settings->Features->Extras->Choose Order for Extras Lists. Here you can set the order that the lists appear in the Extras window. Choose between currenty active lists.
 - Other changes/fixes.
 
-[COLOR dodgerblue][B]Version 2.1.94[/B][/COLOR]
+[COLOR dodgerblue][B]Version 7.1.94[/B][/COLOR]
 - Added add/remove items for TMDb Watchlist & TMDb Favorites list (as above). Access this through the TMDb Manager found in the context menu.
 - Added sorting options for TMDb Watchlist and TMDb Favorites. Sorting is limited currenlty.
 - Other changes/fixes.
 
-[COLOR dodgerblue][B]Version 2.1.93[/B][/COLOR]
+[COLOR dodgerblue][B]Version 7.1.93[/B][/COLOR]
 - A few quick fixes.
 
-[COLOR dodgerblue][B]Version 2.1.92[/B][/COLOR]
+[COLOR dodgerblue][B]Version 7.1.92[/B][/COLOR]
 - Added Related, Similar, Reviews, Comments, Trivia, Blunders, More from Year, More from Genres, More from Networks to actions you can assign to the Extras buttons.
 - Other changes/fixes.
 
-[COLOR dodgerblue][B]Version 2.1.91[/B][/COLOR]
+[COLOR dodgerblue][B]Version 7.1.91[/B][/COLOR]
 - Added Random menus for new TMDb Lists (Watchlist, Favorites & Recommended).
 
-[COLOR dodgerblue][B]Version 2.1.90[/B][/COLOR]
+[COLOR dodgerblue][B]Version 7.1.90[/B][/COLOR]
 - All IMDb related Extras fixed. [COLOR darkgoldenrod]Big thanks to [B]hcgiub001 (pwreit)[/B] for the code needed[/COLOR]. Clear IMDb data in Tools->Database & Cache Maintenance if Reviews/More Like This/Trivia etc is still not showing.
 - Other changes/fixes.
 
@@ -218,7 +222,7 @@
 [COLOR dodgerblue][B]Version 2.1.37[/B][/COLOR]
 - Included episodes when considering hide watched items for widgets.
 - Added "Autoplay Cloud Result" to each account's settings. Enable this and any cloud result found after a prescrape will be automatically played.
-- Added "Avoid Episode Spoilers in Custom Windows" to Settings->Content->General. This will hide plot and thumb spoilers from FinderAM's custom windows.
+- Added "Avoid Episode Spoilers in Custom Windows" to Settings->Content->General. This will hide plot and thumb spoilers from Finder's custom windows.
 - Added "Retry With IMDb Year Data When No Results" to Settings->Results->General.
 - Other changes/fixes.
 

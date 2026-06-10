@@ -1,0 +1,82 @@
+{
+    "Real Debrid": {
+        "icon": "https://fcdn.real-debrid.com/0831/images/logo.png",
+        "items": [
+            {
+                "name": "[COLOR springgreen]Authorize[/COLOR]: [COLOR dodgerblue]F[/COLOR]inder - Real-Debrid",
+                "url": "RunPlugin(plugin://plugin.video.finder/?mode=real_debrid.authenticate)"
+            },
+            {
+                "name": "[COLOR yellow]Revoke[/COLOR]: [COLOR dodgerblue]F[/COLOR]inder - Real-Debrid",
+                "url": "RunPlugin(plugin://plugin.video.finder/?mode=real_debrid.[COLOR yellow}Revoke[/COLOR]: _authentication)"
+            },
+            {
+                "name": "[COLOR springgreen]Authorize[/COLOR]: [COLOR dodgerblue]R[/COLOR]esolve[COLOR dodgerblue]URL[/COLOR] - Real-Debrid",
+                "url": "RunPlugin(plugin://script.module.resolveurl/?mode=auth_rd)"
+            },
+			{
+                "name": "[COLOR yellow]Revoke[/COLOR]: [COLOR dodgerblue]R[/COLOR]esolve[COLOR dodgerblue]URL[/COLOR] - Real-Debrid",
+                "url": "RunPlugin(plugin://script.module.resolveurl/?mode=reset_rd)"
+            }
+
+        ]
+    },
+    
+        "TorBox": {
+        "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS64DE3ULs_6AbH0TTSEnTc0RHTP4umIpNXQg&s",
+        "items": [
+            {
+                "name": "[COLOR springgreen]Authorize[/COLOR]: [COLOR dodgerblue]F[/COLOR]inder - TorBox",
+                "url": "RunPlugin(plugin://plugin.video.finder/?mode=torbox.authenticate)"
+            },
+            {
+                "name": "[COLOR yellow]Revoke[/COLOR]: [COLOR dodgerblue]F[/COLOR]inder - TorBox",
+                "url": "RunPlugin(plugin://plugin.video.finder/?mode=torbox.revoke_authentication)"
+            }
+        ]
+    },
+    
+    "Trakt": {
+        "icon": "https://github.com/newf276/newf276.github.io/blob/master/packages/media/icons/trakt.png?raw=true",
+        "items": [
+            {
+                "name": "[COLOR springgreen]Authorize[/COLOR]: [COLOR dodgerblue]F[/COLOR]inder - Trakt",
+                "url": "RunPlugin(plugin://plugin.video.finder/?mode=trakt.trakt_authenticate)"
+            },
+			{
+                "name": "[COLOR yellow]Revoke[/COLOR]: [COLOR dodgerblue]F[/COLOR]inder - Trakt",
+                "url": "RunPlugin(plugin://plugin.video.finder/?mode=trakt.trakt_[COLOR yellow}Revoke[/COLOR]: _authentication)"
+            },
+            {
+                "name": "[COLOR springgreen]Authorize[/COLOR]: [COLOR dodgerblue]T[/COLOR]MDBH - Trakt",
+                "url": "RunScript(plugin.video.themoviedb.helper,authenticate_trakt)"
+            },
+            {
+                "name": "[COLOR yellow]Revoke[/COLOR]: [COLOR dodgerblue]T[/COLOR]MDBH - Trakt",
+                "url": "RunScript(plugin.video.themoviedb.helper,[COLOR yellow}Revoke[/COLOR]: _trakt)"
+            }
+        ]
+    },
+    
+    "Premiumize": {
+        "icon": "https://github.com/newf276/newf276.github.io/blob/master/packages/media/icons/premiumize.png?raw=true",
+        "items": [
+             {
+                "name": "[COLOR springgreen]Authorize[/COLOR]: [COLOR dodgerblue]F[/COLOR]inder - Premiumize",
+                "url": "RunPlugin(plugin://plugin.video.finder/?mode=premiumize.authenticate)"
+            },
+             {
+                "name": "[COLOR yellow]Revoke[/COLOR]: [COLOR dodgerblue]F[/COLOR]inder - Premiumize",
+                "url": "RunPlugin(plugin://plugin.video.finder/?mode=premiumize.[COLOR yellow}Revoke[/COLOR]: _authentication)"
+            },
+            {
+                "name": "[COLOR springgreen]Authorize[/COLOR]: [COLOR dodgerblue]R[/COLOR]esolve[COLOR dodgerblue]URL[/COLOR] - Premiumize",
+                "url": "RunPlugin(plugin://script.module.resolveurl/?mode=auth_pm)"
+            },
+            {
+                "name": "[COLOR yellow]Revoke[/COLOR]: [COLOR dodgerblue]R[/COLOR]esolve[COLOR dodgerblue]URL[/COLOR] - Premiumize",
+                "url": "RunPlugin(plugin://script.module.resolveurl/?mode=reset_pm)"
+            }
+        ]
+    }
+}

@@ -1,0 +1,41 @@
+[COLOR dodgerblur] VERSION 1.4.3[/COLOR]
+
+[COLOR dodgerblur][B]SCRAPER ENGINE IMPROVEMENTS & ENHANCEMENTS[/B][/COLOR]
+
+• Torz Scraper has been fixed, optimized, and enhanced to improve source reliability, stability, and overall performance during searches.
+
+• AIO Scraper has been updated with multiple fixes and enhancements, resolving issues that could affect source retrieval while improving compatibility with supported providers.
+
+• Other Scraper has been fixed and refined, delivering more consistent results and better handling of provider responses.
+
+• Improved source aggregation across multiple providers, allowing results to be collected faster and more efficiently.
+
+• Optimized scraper communication and processing routines to reduce delays when gathering sources.
+
+• Enhanced caching mechanisms to minimize duplicate requests, reduce unnecessary network traffic, and improve overall search speed.
+
+• Reduced scraper initialization and startup times, resulting in faster search launches and improved responsiveness throughout the addon.
+
+• Improved error handling and recovery processes to help prevent scraper failures and ensure more reliable source retrieval.
+
+• General performance optimizations and backend improvements have been implemented across the scraper framework for a smoother and more stable user experience.
+
+[COLOR dodgerblue][B]SCRAPER FIXES & ENHANCEMENTS[/B][/COLOR]
+
+[COLOR gold]Torz Scraper[/COLOR]
+• Complete scraper maintenance and code review completed.
+• Fixed provider-side changes that were causing source retrieval failures.
+• Improved parsing routines for greater compatibility with recent website updates.
+• Enhanced source validation and filtering for improved link quality.
+• Reduced timeout occurrences and improved overall scraping reliability.
+• Optimized request handling to improve response speed during searches.
+• Additional fallback handling implemented to improve resilience against future provider changes.
+
+[COLOR gold]Aiostreams Scraper[/COLOR]
+• Fixed multiple issues affecting source detection and extraction.
+• Updated scraping logic to support recent site structure changes.
+• Improved playback source accuracy and link verification.
+• Enhanced error handling to reduce failed scrape attempts.
+• Optimized performance during large source searches.
+• Improved compatibility with backend resolver systems.
+• Added additional stability measures to improve long-term reliability.

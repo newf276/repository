@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window type="dialog" id="1107">
+	<defaultcontrol always="true">9000</defaultcontrol>
+	<include>Animation_DialogPopupOpenClose</include>
+	<controls>
+		<control type="group">
+			<centerleft>50%</centerleft>
+			<width>600</width>
+			<centertop>60%</centertop>
+			<height>700</height>
+			<include content="DialogBackgroundCommons">
+				<param name="width" value="600" />
+				<param name="height" value="80" />
+				<param name="header_label" value="$LOCALIZE[137]" />
+				<param name="header_id" value="" />
+			</include>
+			<control type="panel" id="9000">
+				<include>ButtonMenuList</include>
+				<content>
+                    <item>
+						<label>[COLOR lavender]Find Show[/COLOR]</label>
+						<onclick>Dialog.Close(all)</onclick>
+                        <onclick condition="System.AddonIsEnabled(plugin.video.finder)">ActivateWindow(videos,plugin://plugin.video.finder/?action=movie&amp;iconImage=https%3a%2f%2fraw.githubusercontent.com%2fnewfflixAnonyMouse%2fnewfflixAnonyMouse.github.io%2fmain%2fpackages%2fmedia%2ficons%2fshows.png&amp;mode=navigator.search_history&amp;name=Search%20History%20Shows,return)</onclick>
+                        <onclick condition="System.HasAddon(plugin.video.finder) + !System.AddonIsEnabled(plugin.video.finder)">EnableAddon(plugin.video.finder)</onclick>
+						<onclick condition="!System.HasAddon(plugin.video.finder)">InstallAddon(plugin.video.finder)</onclick>
+					</item>
+                    <item>
+						<label>[COLOR deepskyblue]Find Movie[/COLOR]</label>
+						<onclick>Dialog.Close(all)</onclick>
+						<onclick condition="System.AddonIsEnabled(plugin.video.finder)">ActivateWindow(videos,plugin://plugin.video.finder/?action=movie&amp;mode=navigator.search_history&amp;name=Search%20History%20Movies,return)</onclick>
+                        <onclick condition="System.HasAddon(plugin.video.finder) + !System.AddonIsEnabled(plugin.video.finder)">EnableAddon(plugin.video.finder)</onclick>
+						<onclick condition="!System.HasAddon(plugin.video.finder)">InstallAddon(plugin.video.finder)</onclick>
+					</item>
+                    <item>
+						<label>[COLOR springgreen]Authorize Premium Services[/COLOR]</label>
+						<onclick>Dialog.Close(all)</onclick>
+						<onclick condition="System.AddonIsEnabled(plugin.program.cleaner)">ActivateWindow(10001,"plugin://plugin.program.cleaner/?mode=10&amp;name=%5bB%5d%5bCOLOR%20snow%5dAuthorize%20Debrid%20and%20Trakt%5b%2fCOLOR%5d%5b%2fB%5d&amp;name2&amp;url&amp;version",return)</onclick>
+                        <onclick condition="System.HasAddon(plugin.program.cleaner) + !System.AddonIsEnabled(plugin.program.cleaner)">EnableAddon(plugin.program.cleaner)</onclick>
+						<onclick condition="!System.HasAddon(plugin.program.cleaner)">InstallAddon(plugin.program.cleaner)</onclick>
+					</item>
+                    <item>
+						<label>[COLOR darkgoldenrod]Finder Settings[/COLOR]</label>
+						<onclick>Dialog.Close(all)</onclick>
+						<onclick condition="System.AddonIsEnabled(plugin.video.finder)">RunPlugin(plugin://plugin.video.finder/?mode=open_settings)</onclick>
+                        <onclick condition="System.HasAddon(plugin.video.finder) + !System.AddonIsEnabled(plugin.video.finder)">EnableAddon(plugin.video.finder)</onclick>
+						<onclick condition="!System.HasAddon(plugin.video.finder)">InstallAddon(plugin.video.finder)</onclick>
+					</item>
+                    <item>
+						<label>[COLOR darkgoldenrod]Clear Caches[/COLOR]</label>
+						<onclick>Dialog.Close(all)</onclick>
+						<onclick condition="System.AddonIsEnabled(plugin.video.finder)">RunPlugin(plugin://plugin.video.finder/?mode=clear_all_cache)</onclick>
+                        <onclick condition="System.HasAddon(plugin.video.finder) + !System.AddonIsEnabled(plugin.video.finder)">EnableAddon(plugin.video.finder)</onclick>
+						<onclick condition="!System.HasAddon(plugin.video.finder)">InstallAddon(plugin.video.finder)</onclick>
+					</item>
+                    <item>
+						<label>[COLOR lavender]Reload Skin[/COLOR]</label>
+						<onclick>ReloadSkin()</onclick>
+					</item>
+					<item>
+						<label>$LOCALIZE[31145]</label>
+						<onclick>Dialog.Close(all)</onclick><onclick>ActivateWindow(addonbrowser,addons://search/,return)</onclick>
+					</item>
+                    <item>
+						<label>[COLOR springgreen]Network Speed Test[/COLOR]</label>
+						<onclick>Dialog.Close(all)</onclick>
+						<onclick condition="System.AddonIsEnabled(plugin.program.cleaner)">RunPlugin(plugin://plugin.program.cleaner/?mode=28)</onclick>
+                        <onclick condition="System.HasAddon(plugin.program.cleaner) + !System.AddonIsEnabled(plugin.program.cleaner)">EnableAddon(plugin.program.cleaner)</onclick>
+						<onclick condition="!System.HasAddon(plugin.program.cleaner)">InstallAddon(plugin.program.cleaner)</onclick>
+					</item>
+                    <item>
+						<label>[COLOR yellow]Force Close Kodi[/COLOR]</label>
+						<onclick>Dialog.Close(all)</onclick>
+						<onclick condition="System.AddonIsEnabled(plugin.program.cleaner)">RunPlugin(plugin://plugin.program.cleaner/?mode=18)</onclick>
+                        <onclick condition="System.HasAddon(plugin.program.cleaner) + !System.AddonIsEnabled(plugin.program.cleaner)">EnableAddon(plugin.program.cleaner)</onclick>
+						<onclick condition="!System.HasAddon(plugin.program.cleaner)">InstallAddon(plugin.program.cleaner)</onclick>
+					</item>
+				</content>
+			</control>
+		</control>
+	</controls>
+</window>

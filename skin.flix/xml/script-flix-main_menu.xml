@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<includes>
+  <include name="MainMenuItems">
+    <item>
+      <label>TV Shows</label>
+      <onclick>ActivateWindow(Videos,plugin://plugin.video.finder/?mode=build_tvshow_list&amp;action=trakt_collection&amp;category_name=TV+Shows+Collection&amp;iconImage=%2FUsers%2Fian%2FLibrary%2FApplication+Support%2FKodi%2Faddons%2Fplugin.video.finder%2Fresources%2Fmedia%2Ficons%2Ftrakt.png,return)</onclick>
+      <property name="menu_id">$NUMBER[3000]</property>
+      <property name="id">widgets</property>
+      <property name="icon">image://%2fUsers%2fian%2fLibrary%2fApplication%20Support%2fKodi%2faddons%2fplugin.video.finder%2fresources%2fmedia%2ficons%2ftrakt.png/</property>
+    </item>
+    <item>
+      <label>$LOCALIZE[342]</label>
+      <onclick>ActivateWindow(Videos,plugin://plugin.video.finder/?mode=build_movie_list&amp;action=trakt_collection&amp;category_name=Movies+Collection&amp;iconImage=%2FUsers%2Fian%2FLibrary%2FApplication+Support%2FKodi%2Faddons%2Fplugin.video.finder%2Fresources%2Fmedia%2Ficons%2Ftrakt.png,return)</onclick>
+      <property name="menu_id">$NUMBER[3100]</property>
+      <property name="id">widgets</property>
+      <property name="icon">image://%2fUsers%2fian%2fLibrary%2fApplication%20Support%2fKodi%2faddons%2fplugin.video.finder%2fresources%2fmedia%2ficons%2ftrakt.png/</property>
+    </item>
+    <item>
+      <label>Live TV</label>
+      <onclick>ActivateWindow(TVGuide)</onclick>
+      <property name="menu_id">$NUMBER[3200]</property>
+      <property name="id">widgets</property>
+      <property name="icon">iconpicker/monochrome/Photo Video/webcam-man.png</property>
+    </item>
+    <item>
+      <label>$LOCALIZE[24001]</label>
+      <onclick>ActivateWindow(AddonBrowser)</onclick>
+      <property name="menu_id">$NUMBER[3300]</property>
+      <property name="id">widgets</property>
+      <property name="icon">icons/sidemenu/addons.png</property>
+    </item>
+    <item>
+      <label>$LOCALIZE[10134]</label>
+      <onclick>ActivateWindow(favouritesbrowser)</onclick>
+      <property name="menu_id">$NUMBER[3400]</property>
+      <property name="id">widgets</property>
+      <property name="icon">icons/sidemenu/favourites.png</property>
+    </item>
+    <item>
+      <label>$LOCALIZE[8]</label>
+      <onclick condition="!String.IsEmpty(Weather.Plugin) + String.IsEmpty(Window(Home).Property(weather_cycling))">SetProperty(weather_cycling,true,home)</onclick>
+      <onclick condition="!String.IsEmpty(Weather.Plugin) + String.IsEmpty(Window(Home).Property(weather_cycling))">ReplaceWindow(Weather)</onclick>
+      <onclick condition="!String.IsEmpty(Weather.Plugin)">Notification(Weather, Cycling to next location..., 2000)</onclick>
+      <onclick condition="!String.IsEmpty(Weather.Plugin)">Weather.LocationNext</onclick>
+      <onclick condition="String.IsEmpty(Weather.Plugin)">ReplaceWindow(servicesettings,weather)</onclick>
+      <property name="menu_id">$NUMBER[15000]</property>
+      <property name="id">weather</property>
+      <property name="icon">$VAR[WeatherFanartCodeIcon]</property>
+    </item>
+  </include>
+</includes>

@@ -41,7 +41,6 @@
 		<disclaimer>The author does not host or own any content found within this addon. The author is not responsible for the content found using this addon. The author is not responsible for the use of this addon.</disclaimer>
 		<assets><icon>icon.png</icon></assets>
 		<assets><fanart>fanart.jpg</fanart></assets>
-        <news>For latest changes see Show Changelog within General of add-on settings.</news>
 	</extension>
 </addon>
 
@@ -295,17 +294,48 @@
 	</extension>
 </addon>
 
-
-<addon id="repository.newf" name="[COLOR dodgerblue]N[/COLOR]ewf's [COLOR dodgerblue]R[/COLOR]epository" version="1.0.0" provider-name="newf276">
-
+<addon id="repository.newf" name="[COLOR dodgerblue]N[/COLOR]ewf's [COLOR dodgerblue]R[/COLOR]epository" version="2.0.0" provider-name="Newf276">
     <extension point="xbmc.addon.repository" name="[COLOR dodgerblue]N[/COLOR]ewf's [COLOR dodgerblue]R[/COLOR]epository">
-
         <dir>
             <info compressed="false">https://raw.githubusercontent.com/newf276/repository/master/zips/addons.xml</info>
             <checksum>https://raw.githubusercontent.com/newf276/repository/refs/heads/master/zips/addons.xml.md5</checksum>
             <datadir zip="true">https://raw.githubusercontent.com/newf276/repository/master/zips/</datadir>
         </dir>
-
+        <dir>
+            <info compressed="false">https://raw.githubusercontent.com/CocoJoe2411/repository.cocoscrapers/master/zips/addons.xml</info><checksum>https://raw.githubusercontent.com/CocoJoe2411/repository.cocoscrapers/master/zips/addons.xml.md5</checksum>
+            <datadir zip="true">https://raw.githubusercontent.com/CocoJoe2411/repository.cocoscrapers/master/zips/</datadir>
+        </dir>
+		<dir>
+	        <info compressed="false">https://raw.githubusercontent.com/Gujal00/smrzips/master/addons.xml</info>
+	        <checksum>https://raw.githubusercontent.com/Gujal00/smrzips/master/addons.xml.md5</checksum>
+	        <datadir zip="true">https://raw.githubusercontent.com/Gujal00/smrzips/master/zips/</datadir>
+		</dir>
+        <dir>
+            <info compressed="false">https://raw.githubusercontent.com/dobbelina/repository.dobbelina/master/addons.xml</info>
+            <checksum>https://raw.githubusercontent.com/dobbelina/repository.dobbelina/master/addons.xml.md5</checksum>
+            <datadir zip="true">https://raw.githubusercontent.com/dobbelina/repository.dobbelina/master/</datadir>
+        </dir>
+        <dir>
+            <info>https://raw.githubusercontent.com/newt-sc/a4kSubtitles/master/packages/addons.xml</info>
+            <checksum>https://raw.githubusercontent.com/newt-sc/a4kSubtitles/master/packages/addons.xml.crc</checksum>
+            <datadir>https://github.com/newt-sc/a4kSubtitles/archive</datadir>
+            <artdir>https://github.com/a4k-openproject/a4kSubtitles/releases/download/v0.0.13</artdir>
+        </dir>
+        <dir>
+            <info compressed="false">https://slyguy.uk/.repo/repository.slyguy/addons.xml</info>
+            <checksum>https://slyguy.uk/.repo/repository.slyguy/addons.xml.md5</checksum>
+            <datadir zip="true">https://slyguy.uk/.repo/repository.slyguy/</datadir>
+        </dir>
+        <dir>
+            <info compressed="false">https://slyguy.uk/.repo/repository.slyguy.inputstreamhelper/addons.xml</info>
+           	<checksum>https://slyguy.uk/.repo/repository.slyguy.inputstreamhelper/addons.xml.md5</checksum>
+           	<datadir zip="true">https://slyguy.uk/.repo/repository.slyguy.inputstreamhelper/</datadir>
+        </dir>
+        <dir>
+            <info compressed="false">https://slyguy.uk/.repo/repository.slyguy.youtube/addons.xml</info>
+            <checksum>https://slyguy.uk/.repo/repository.slyguy.youtube/addons.xml.md5</checksum>
+            <datadir zip="true">https://slyguy.uk/.repo/repository.slyguy.youtube/</datadir>
+        </dir>
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary>repository</summary>
@@ -349,27 +379,6 @@
     <source>https://github.com/newf276/repository/plugin.video.cbc</source>
     <news>Add back missing live channels</news>
   </extension>
-</addon>
-
-<addon id="script.module.fenomscrapers" version="2.10.8" name="[COLOR dodgerblue]F[/COLOR]enom [COLOR dodgerblue]S[/COLOR]crapers [COLOR dodgerblue]M[/COLOR]odule" provider-name="Mr-Kodi,Newf276">
-    <requires>
-        <import addon="xbmc.python" version="3.0.0" />
-        <import addon="script.module.requests" />
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="lib/default.py">
-        <provides>executable</provides>
-    </extension>
-    <extension point="xbmc.service" library="lib/service.py" start="startup" />
-    <extension point="xbmc.python.module" library="lib" />
-	<extension point="xbmc.addon.metadata">
-		<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
-		<summary>Fenom's Scrapers</summary>
-		<description>A module to query magnet providers.[CR][CR]This is a Non-profit resource, organized solely for educational purposes which is protected under the Fair-Use doctrine of the Copyright Act, Specifically section 107, which does promote freedom of expression, by permitting the unlicensed use of copyright-protected works.</description>
-		<disclaimer>The author does not host or own any content found within this addon. The author is not responsible for the content found using this addon. The author is not responsible for the use of this addon.</disclaimer>
-		<assets><icon>icon.png</icon></assets>
-		<assets><fanart>fanart.jpg</fanart></assets>
-        <news>For latest changes see Show Changelog within General of add-on settings.</news>
-	</extension>
 </addon>
 
 <addon id="skin.flix" version="1.0.0" name="[COLOR dodgerblue]N[/COLOR]ewf's [COLOR dodgerblue]F[/COLOR]lix [COLOR dodgerblue]S[/COLOR]kin" provider-name="Newf276">

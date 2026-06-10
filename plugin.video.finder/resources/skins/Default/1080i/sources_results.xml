@@ -21,30 +21,32 @@
                 <animation effect="fade" end="25" time="120" tween="sine">WindowOpen</animation>
             </control>
         </control>
+        <!-- Logo and Total Results -->
         <control type="group">
             <animation effect="fade" end="100" time="200">WindowOpen</animation>
-            <!-- Logo and Total Results -->
-            <control type="group">
-                <control type="image">
-                    <left>5</left>
-                    <top>5</top>
-                    <width>60</width>
-                    <height>60</height>
-                    <aspectratio aligny="top">keep</aspectratio>
-                    <texture>$INFO[Window(10000).Property(finder.addon_icon_mini)]</texture>
-                </control>
-                <control type="label">
-                    <left>70</left>
-                    <top>22</top>
-                    <width max="650">auto</width>
-                    <height>20</height>
-                    <font>font10</font> <!-- finder_21 -->
-                    <textcolor>FFFFFFFF</textcolor>
-                    <align>left</align>
-                    <aligny>center</aligny>
-                    <label>[B]$INFO[Window.Property(total_results)][/B] [UPPERCASE]Results $INFO[Window.Property(filters_ignored)] $INFO[Window.Property(filter_info)][/UPPERCASE]</label>
-                </control>
+            <control type="image">
+                <left>5</left>
+                <top>5</top>
+                <width>60</width>
+                <height>60</height>
+                <aspectratio aligny="top">keep</aspectratio>
+                <texture>$INFO[Window(10000).Property(finder.addon_icon_mini)]</texture>
             </control>
+            <control type="label">
+                <left>70</left>
+                <top>22</top>
+                <width max="650">auto</width>
+                <height>20</height>
+                <font>font10</font> <!-- FINDER_21 -->
+                <textcolor>FFFFFFFF</textcolor>
+                <align>left</align>
+                <aligny>center</aligny>
+                <label>[B]$INFO[Window.Property(total_results)][/B] [UPPERCASE]Results $INFO[Window.Property(filters_ignored)] $INFO[Window.Property(filter_info)][/UPPERCASE]</label>
+            </control>
+        </control>
+        <!-- Results -->
+        <control type="group">
+            <animation effect="fade" end="100" time="200">WindowOpen</animation>
             <!-- List 2000 -->
             <control type="group">
                 <visible>String.IsEqual(Window.Property(window_format),list)</visible>
@@ -64,7 +66,7 @@
                     <left>355</left>
                     <width max="1210">auto</width>
                     <height>30</height>
-                    <font>font60</font> <!-- finder_60_BOLD -->
+                    <font>font60</font> <!-- FINDER_60_BOLD -->
                     <textcolor>FFCCCCCC</textcolor>
                     <align>center</align>
                     <aligny>top</aligny>
@@ -77,7 +79,7 @@
                     <width>650</width>
                     <height>950</height>
                     <aspectratio aligny="top">stretch</aspectratio>
-                    <texture diffuse="finder_diffuse/poster_w217_h320.png" />
+                    <texture diffuse="finder_diffuse/poster-50.png" background="true" />
                 </control>
                 <control type="fixedlist" id="2000">
                     <pagecontrol>2060</pagecontrol>
@@ -99,7 +101,7 @@
                             <top>15</top>
                             <width>1180</width>
                             <height>110</height>
-                            <texture colordiffuse="FF1F2020" border="30">finder_common/circle.png</texture>
+                            <texture colordiffuse="$INFO[Window(10000).Property(finder.window_theme.sources)]" border="30">finder_common/circle.png</texture>
                         </control>
                         <control type="group">
                             <height max="100">auto</height>
@@ -108,7 +110,7 @@
                             <left>20</left>
                             <visible>String.IsEmpty(ListItem.Property(perform_full_search))</visible>
                             <control type="label">
-                                <font>font14</font> <!-- finder_33 -->
+                                <font>font14</font> <!-- FINDER_33 -->
                                 <align>left</align>
                                 <aligny>bottom</aligny>
                                 <label>[COLOR $INFO[ListItem.Property(highlight)]][B]$INFO[ListItem.Property(quality)][/B][/COLOR]</label>
@@ -116,7 +118,7 @@
                             </control>
                             <control type="label">
                                 <top>35</top>
-                                <font>font10</font> <!-- finder_21 -->
+                                <font>font10</font> <!-- FINDER_21 -->
                                 <align>left</align>
                                 <aligny>top</aligny>
                                 <label>[COLOR $INFO[ListItem.Property(highlight)]][B]$INFO[ListItem.Property(provider)][/B][/COLOR]</label>
@@ -130,7 +132,7 @@
                                 <left>210</left>
                                 <width max="950">auto</width>
                                 <height>12</height>
-                                <font>font10</font> <!-- finder_21 -->
+                                <font>font10</font> <!-- FINDER_21 -->
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
@@ -142,7 +144,7 @@
                                 <left>210</left>
                                 <width max="950">auto</width>
                                 <height>12</height>
-                                <font>font10</font> <!-- finder_21 -->
+                                <font>font10</font> <!-- FINDER_21 -->
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
@@ -154,7 +156,7 @@
                                 <left>210</left>
                                 <width max="950">auto</width>
                                 <height>12</height>
-                                <font>font10</font> <!-- finder_21 -->
+                                <font>font10</font> <!-- FINDER_21 -->
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
@@ -178,7 +180,7 @@
                                 <left>230</left>
                                 <width max="860">auto</width>
                                 <height>40</height>
-                                <font>font14</font> <!-- finder_33 -->
+                                <font>font14</font> <!-- FINDER_33 -->
                                 <textcolor>FF9c9a9b</textcolor>
                                 <align>center</align>
                                 <aligny>center</aligny>
@@ -211,7 +213,7 @@
                                     <top>35</top>
                                     <left>20</left>
                                     <control type="label">
-                                        <font>font14</font> <!-- finder_33 -->
+                                        <font>font14</font> <!-- FINDER_33 -->
                                         <textcolor>FF1F2020</textcolor>
                                         <align>left</align>
                                         <aligny>bottom</aligny>
@@ -219,7 +221,7 @@
                                     </control>
                                     <control type="label">
                                         <top>35</top>
-                                        <font>font10</font> <!-- finder_21 -->
+                                        <font>font10</font> <!-- FINDER_21 -->
                                         <textcolor>FF1F2020</textcolor>
                                         <align>left</align>
                                         <aligny>top</aligny>
@@ -231,7 +233,7 @@
                                     <left>210</left>
                                     <width max="950">auto</width>
                                     <height>12</height>
-                                    <font>font10</font> <!-- finder_21 -->
+                                    <font>font10</font> <!-- FINDER_21 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
@@ -243,7 +245,7 @@
                                     <left>210</left>
                                     <width max="950">auto</width>
                                     <height>12</height>
-                                    <font>font10</font> <!-- finder_21 -->
+                                    <font>font10</font> <!-- FINDER_21 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
@@ -255,7 +257,7 @@
                                     <left>210</left>
                                     <width max="950">auto</width>
                                     <height>12</height>
-                                    <font>font10</font> <!-- finder_21 -->
+                                    <font>font10</font> <!-- FINDER_21 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
@@ -279,7 +281,7 @@
                                     <left>210</left>
                                     <width max="860">auto</width>
                                     <height>40</height>
-                                    <font>font14</font> <!-- finder_33 -->
+                                    <font>font14</font> <!-- FINDER_33 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>center</align>
                                     <aligny>center</aligny>
@@ -296,7 +298,7 @@
                     <height>1080</height>
                     <texture colordiffuse="FF000000">finder_common/white.png</texture>
                     <visible>Control.HasFocus(2060) | Control.HasFocus(2100)</visible>
-                    <animation effect="fade" start="0" end="60" time="200" tween="sine">Visible</animation>
+                    <animation effect="fade" start="0" end="70" time="200" tween="sine">Visible</animation>
                 </control>
                 <control type="image">
                     <left>565</left>
@@ -344,7 +346,7 @@
                     <left>355</left>
                     <width max="1210">auto</width>
                     <height>30</height>
-                    <font>font60</font> <!-- finder_60_BOLD -->
+                    <font>font60</font> <!-- FINDER_60_BOLD -->
                     <textcolor>FFCCCCCC</textcolor>
                     <align>center</align>
                     <aligny>bottom</aligny>
@@ -369,7 +371,7 @@
                             <top>15</top>
                             <width>925</width>
                             <height>110</height>
-                            <texture colordiffuse="FF1F2020" border="30">finder_common/circle.png</texture>
+                            <texture colordiffuse="$INFO[Window(10000).Property(finder.window_theme.sources)]" border="30">finder_common/circle.png</texture>
                         </control>
                         <control type="group">
                             <visible>String.IsEmpty(ListItem.Property(perform_full_search))</visible>
@@ -379,7 +381,7 @@
                                 <top>35</top>
                                 <left>20</left>
                                 <control type="label">
-                                    <font>font14</font> <!-- finder_33 -->
+                                    <font>font14</font> <!-- FINDER_33 -->
                                     <align>left</align>
                                     <aligny>bottom</aligny>
                                     <label>[COLOR $INFO[ListItem.Property(highlight)]][B]$INFO[ListItem.Property(quality)][/B][/COLOR]</label>
@@ -387,7 +389,7 @@
                                 </control>
                                 <control type="label">
                                     <top>35</top>
-                                    <font>font10</font> <!-- finder_21 -->
+                                    <font>font10</font> <!-- FINDER_21 -->
                                     <align>left</align>
                                     <aligny>top</aligny>
                                     <label>[COLOR $INFO[ListItem.Property(highlight)]][B]$INFO[ListItem.Property(provider)][/B][/COLOR]</label>
@@ -399,7 +401,7 @@
                                 <left>185</left>
                                 <width max="725">auto</width>
                                 <height>12</height>
-                                <font>font10</font> <!-- finder_21 -->
+                                <font>font10</font> <!-- FINDER_21 -->
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
@@ -411,7 +413,7 @@
                                 <left>185</left>
                                 <width max="725">auto</width>
                                 <height>12</height>
-                                <font>font10</font> <!-- finder_21 -->
+                                <font>font10</font> <!-- FINDER_21 -->
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
@@ -423,7 +425,7 @@
                                 <left>185</left>
                                 <width max="725">auto</width>
                                 <height>12</height>
-                                <font>font10</font> <!-- finder_21 -->
+                                <font>font10</font> <!-- FINDER_21 -->
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
@@ -447,7 +449,7 @@
                                 <left>40</left>
                                 <width max="860">auto</width>
                                 <height>40</height>
-                                <font>font14</font> <!-- finder_33 -->
+                                <font>font14</font> <!-- FINDER_33 -->
                                 <textcolor>FF9c9a9b</textcolor>
                                 <align>center</align>
                                 <aligny>center</aligny>
@@ -480,7 +482,7 @@
                                     <top>35</top>
                                     <left>20</left>
                                     <control type="label">
-                                        <font>font14</font> <!-- finder_33 -->
+                                        <font>font14</font> <!-- FINDER_33 -->
                                         <textcolor>FF1F2020</textcolor>
                                         <align>left</align>
                                         <aligny>bottom</aligny>
@@ -488,7 +490,7 @@
                                     </control>
                                     <control type="label">
                                         <top>35</top>
-                                        <font>font10</font> <!-- finder_21 -->
+                                        <font>font10</font> <!-- FINDER_21 -->
                                         <textcolor>FF1F2020</textcolor>
                                         <align>left</align>
                                         <aligny>top</aligny>
@@ -500,7 +502,7 @@
                                     <left>185</left>
                                     <width max="725">auto</width>
                                     <height>12</height>
-                                    <font>font10</font> <!-- finder_21 -->
+                                    <font>font10</font> <!-- FINDER_21 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
@@ -512,7 +514,7 @@
                                     <left>185</left>
                                     <width max="725">auto</width>
                                     <height>12</height>
-                                    <font>font10</font> <!-- finder_21 -->
+                                    <font>font10</font> <!-- FINDER_21 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
@@ -524,7 +526,7 @@
                                     <left>185</left>
                                     <width max="725">auto</width>
                                     <height>12</height>
-                                    <font>font10</font> <!-- finder_21 -->
+                                    <font>font10</font> <!-- FINDER_21 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
@@ -548,7 +550,7 @@
                                     <left>40</left>
                                     <width max="860">auto</width>
                                     <height>40</height>
-                                    <font>font14</font> <!-- finder_33 -->
+                                    <font>font14</font> <!-- FINDER_33 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>center</align>
                                     <aligny>center</aligny>
@@ -567,7 +569,7 @@
                     <height>1080</height>
                     <texture colordiffuse="FF000000">finder_common/white.png</texture>
                     <visible>Control.HasFocus(2063) | Control.HasFocus(2100)</visible>
-                    <animation effect="fade" start="0" end="60" time="200" tween="sine">Visible</animation>
+                    <animation effect="fade" start="0" end="70" time="200" tween="sine">Visible</animation>
                 </control>
                 <control type="image">
                     <left>845</left>
@@ -615,7 +617,7 @@
                     <left>355</left>
                     <width max="1210">auto</width>
                     <height>30</height>
-                    <font>font60</font> <!-- finder_60_BOLD -->
+                    <font>font60</font> <!-- FINDER_60_BOLD -->
                     <textcolor>FFCCCCCC</textcolor>
                     <align>center</align>
                     <aligny>top</aligny>
@@ -642,7 +644,7 @@
                             <top>15</top>
                             <width>1700</width>
                             <height>110</height>
-                            <texture colordiffuse="FF1F2020" border="30">finder_common/circle.png</texture>
+                            <texture colordiffuse="$INFO[Window(10000).Property(finder.window_theme.sources)]" border="30">finder_common/circle.png</texture>
                         </control>
                         <control type="group">
                             <visible>String.IsEmpty(ListItem.Property(perform_full_search))</visible>
@@ -652,7 +654,7 @@
                                 <top>35</top>
                                 <left>20</left>
                                 <control type="label">
-                                    <font>font14</font> <!-- finder_33 -->
+                                    <font>font14</font> <!-- FINDER_33 -->
                                     <align>left</align>
                                     <aligny>bottom</aligny>
                                     <label>[COLOR $INFO[ListItem.Property(highlight)]][B]$INFO[ListItem.Property(quality)][/B][/COLOR]</label>
@@ -660,7 +662,7 @@
                                 </control>
                                 <control type="label">
                                     <top>35</top>
-                                    <font>font10</font> <!-- finder_21 -->
+                                    <font>font10</font> <!-- FINDER_21 -->
                                     <align>left</align>
                                     <aligny>top</aligny>
                                     <label>[COLOR $INFO[ListItem.Property(highlight)]][B]$INFO[ListItem.Property(provider)][/B][/COLOR]</label>
@@ -672,7 +674,7 @@
                                 <left>210</left>
                                 <width max="1460">auto</width>
                                 <height>12</height>
-                                <font>font10</font> <!-- finder_21 -->
+                                <font>font10</font> <!-- FINDER_21 -->
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
@@ -684,7 +686,7 @@
                                 <left>210</left>
                                 <width max="1460">auto</width>
                                 <height>12</height>
-                                <font>font12</font> <!-- finder_26 -->
+                                <font>font12</font> <!-- FINDER_26 -->
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
@@ -708,7 +710,7 @@
                                 <left>600</left>
                                 <width max="1460">auto</width>
                                 <height>40</height>
-                                <font>font14</font> <!-- finder_33 -->
+                                <font>font14</font> <!-- FINDER_33 -->
                                 <textcolor>FF9c9a9b</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
@@ -740,7 +742,7 @@
                                     <top>35</top>
                                     <left>20</left>
                                     <control type="label">
-                                        <font>font14</font> <!-- finder_33 -->
+                                        <font>font14</font> <!-- FINDER_33 -->
                                         <textcolor>FF1F2020</textcolor>
                                         <align>left</align>
                                         <aligny>bottom</aligny>
@@ -748,7 +750,7 @@
                                     </control>
                                     <control type="label">
                                         <top>35</top>
-                                        <font>font10</font> <!-- finder_21 -->
+                                        <font>font10</font> <!-- FINDER_21 -->
                                         <textcolor>FF1F2020</textcolor>
                                         <align>left</align>
                                         <aligny>top</aligny>
@@ -760,7 +762,7 @@
                                     <left>210</left>
                                     <width max="1460">auto</width>
                                     <height>12</height>
-                                    <font>font10</font> <!-- finder_21 -->
+                                    <font>font10</font> <!-- FINDER_21 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
@@ -772,7 +774,7 @@
                                     <left>210</left>
                                     <width max="1460">auto</width>
                                     <height>12</height>
-                                    <font>font12</font> <!-- finder_26 -->
+                                    <font>font12</font> <!-- FINDER_26 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
@@ -796,7 +798,7 @@
                                     <left>600</left>
                                     <width max="1460">auto</width>
                                     <height>40</height>
-                                    <font>font14</font> <!-- finder_33 -->
+                                    <font>font14</font> <!-- FINDER_33 -->
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
@@ -813,7 +815,7 @@
                     <height>1080</height>
                     <texture colordiffuse="FF000000">finder_common/white.png</texture>
                     <visible>Control.HasFocus(2064) | Control.HasFocus(2100)</visible>
-                    <animation effect="fade" start="0" end="60" time="200" tween="sine">Visible</animation>
+                    <animation effect="fade" start="0" end="70" time="200" tween="sine">Visible</animation>
                 </control>
                 <control type="image">
                     <left>860</left>
@@ -851,23 +853,9 @@
             <top>159</top>
             <left>5</left>
             <control type="image">
-                <left>761</left>
-                <top>321</top>
-                <width>54</width>
-                <height>160</height>
-                <texture colordiffuse="FFCCCCCC" border="30" flipx="true">finder_common/left-circle.png</texture>
-            </control>
-            <control type="image">
-                <left>-2</left>
-                <top>-2</top>
-                <width>782</width>
-                <height>807</height>
-                <texture colordiffuse="FFCCCCCC" border="30">finder_common/circle.png</texture>
-            </control>
-            <control type="image">
                 <width>778</width>
                 <height>803</height>
-                <texture colordiffuse="FF1F2020" border="30">finder_common/circle.png</texture>
+                <texture colordiffuse="$INFO[Window(10000).Property(finder.window_theme)]" border="30">finder_common/circle.png</texture>
             </control>
             <control type="image">
                 <left>10</left>
@@ -877,25 +865,18 @@
                 <align>left</align>
                 <aligny>top</aligny>
                 <aspectratio aligny="top">keep</aspectratio>
-                <texture colordiffuse="FFCCCCCC">$INFO[Window(10000).Property(finder.addon_icon_mini)]</texture>
+                <texture colordiffuse="CCCCCCCC">$INFO[Window(10000).Property(finder.addon_icon_mini)]</texture>
             </control>
             <control type="label">
                 <width max="580">auto</width>
                 <top>10</top>
                 <left>110</left>
                 <height>20</height>
-                <font>font12</font> <!-- finder_26 -->
+                <font>font12</font> <!-- FINDER_26 -->
                 <textcolor>FFCCCCCC</textcolor>
                 <shadowcolor>FF000000</shadowcolor>
                 <align>center</align>
                 <label>[UPPERCASE][B]actions[/B][/UPPERCASE]</label>
-            </control>
-            <control type="image">
-                <top>322</top>
-                <left>760</left>
-                <width>54</width>
-                <height>158</height>
-                <texture colordiffuse="FF1F2020" border="30" flipx="true">finder_common/left-circle.png</texture>
             </control>
             <control type="image">
                 <visible>!Control.HasFocus(2100)</visible>
@@ -935,7 +916,7 @@
                         <left>70</left>
                         <top>45</top>
                         <height>5</height>
-                        <font>font12</font> <!-- finder_26 -->
+                        <font>font12</font> <!-- FINDER_26 -->
                         <textcolor>FFCCCCCC</textcolor>
                         <aligny>center</aligny>
                         <label>[UPPERCASE]$INFO[ListItem.Property(label)][/UPPERCASE]</label>
@@ -952,7 +933,7 @@
                         <top>45</top>
                         <height>5</height>
                         <width max="610">auto</width>
-                        <font>font12</font> <!-- finder_26 -->
+                        <font>font12</font> <!-- FINDER_26 -->
                         <textcolor>FF1F2020</textcolor>
                         <aligny>center</aligny>
                         <label>[UPPERCASE]$INFO[ListItem.Property(label)][/UPPERCASE]</label>

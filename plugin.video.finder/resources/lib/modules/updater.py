@@ -4,7 +4,6 @@ import requests
 import shutil
 from os import path
 from caches.settings_cache import get_setting, set_setting
-from indexers.random_lists import refresh_widgets
 from modules.utils import string_alphanum_to_num, unzip
 from modules import kodi_utils 
 logger = kodi_utils.logger
@@ -26,7 +25,7 @@ def get_changes(online_version=None):
 		if not online_version:
 			current_version, online_version = get_versions()
 			if not version_check(current_version, online_version): return kodi_utils.ok_dialog(heading='Finder Updater',
-				text='You are running the current version of finder.[CR][CR]There is no new version changelog to view.')
+				text='You are running the current version of Finder.[CR][CR]There is no new version changelog to view.')
 		kodi_utils.show_busy_dialog()
 		result = requests.get(get_location('finder_changes'))
 		kodi_utils.hide_busy_dialog()
@@ -56,8 +55,8 @@ def update_check(action=4):
 			get_changes(online_version)
 			if not kodi_utils.confirm_dialog(heading='Finder Updater', text='Continue with Update After Viewing Changes?', ok_label='Yes', cancel_label='No'): return
 			show_after_action = False
-	if action == 1: kodi_utils.notification('finder Update Occuring', icon=kodi_utils.get_icon('downloads'))
-	elif action == 2: return kodi_utils.notification('finder Update Available', icon=kodi_utils.get_icon('downloads'))
+	if action == 1: kodi_utils.notification('Finder Update Occuring', icon=kodi_utils.get_icon('downloads'))
+	elif action == 2: return kodi_utils.notification('Finder Update Available', icon=kodi_utils.get_icon('downloads'))
 	return update_addon(online_version, action, show_after_action)
 
 def rollback_check():
@@ -67,8 +66,8 @@ def rollback_check():
 	results = requests.get(url)
 	kodi_utils.hide_busy_dialog()
 	if results.status_code != 200: return kodi_utils.ok_dialog(heading='Finder Updater', text='Error rolling back.[CR]Please install rollback manually')
-	j_results = results.json()
-	results = [i['name'].split('-')[1].replace('.zip', '') for i in j_results if 'plugin.video.finder' in i['name'] \
+	results = results.json()
+	results = [i['name'].split('-')[1].replace('.zip', '') for i in results if 'plugin.video.finder' in i['name'] \
 				and not i['name'].split('-')[1].replace('.zip', '') == current_version]
 	if not results: return kodi_utils.ok_dialog(heading='Finder Updater', text='No previous versions found.[CR]Please install rollback manually')
 	results.sort(reverse=True)
@@ -77,14 +76,14 @@ def rollback_check():
 	rollback_version = kodi_utils.select_dialog(results, **kwargs)
 	if rollback_version == None: return
 	if not kodi_utils.confirm_dialog(heading='Finder Updater',
-		text='Are you sure?[CR]Version [B]%s[/B] will overwrite your current installed version.[CR]finder will set your update action to [B]OFF[/B] if rollback is successful' \
+		text='Are you sure?[CR]Version [B]%s[/B] will overwrite your current installed version.[CR]Finder will set your update action to [B]OFF[/B] if rollback is successful' \
 		% rollback_version): return
 	update_addon(rollback_version, 5)
 
 def update_addon(new_version, action, show_after_action=True):
 	kodi_utils.close_all_dialog()
 	kodi_utils.execute_builtin('ActivateWindow(Home)', True)
-	kodi_utils.notification('finder Performing Rollback' if action == 5 else 'finder Performing Update', icon=kodi_utils.get_icon('downloads'))
+	kodi_utils.notification('Finder Performing Rollback' if action == 5 else 'Finder Performing Update', icon=kodi_utils.get_icon('downloads'))
 	zip_name = 'plugin.video.finder-%s.zip' % new_version
 	url = get_location('%s') % zip_name
 	kodi_utils.show_busy_dialog()
@@ -99,15 +98,15 @@ def update_addon(new_version, action, show_after_action=True):
 	if not success: return kodi_utils.ok_dialog(heading='Finder Updater', text='Error Updating.[CR]Please install new update manually')
 	if action == 5:
 		set_setting('update.action', '3')
-		kodi_utils.ok_dialog(heading='Finder Updater', text='[CR]Success.[CR]finder rolled back to version [B]%s[/B]' % new_version)
+		kodi_utils.ok_dialog(heading='Finder Updater', text='[CR]Success.[CR]Finder rolled back to version [B]%s[/B]' % new_version)
 	elif action in (0, 4):
 		if show_after_action:
-			if kodi_utils.confirm_dialog(heading='Finder Updater', text='[CR]Success.[CR]Finder Updated to version [B]%s[/B]' % new_version,
+			if kodi_utils.confirm_dialog(heading='Finder Updater', text='[CR]Success.[CR]Finder updated to version [B]%s[/B]' % new_version,
 										ok_label='Changelog', cancel_label='Exit', default_control=10) != False:
 				kodi_utils.show_text('Changelog', file=kodi_utils.translate_path('special://home/addons/plugin.video.finder/resources/text/changelog.txt'), font_size='large')
 		else:
-			kodi_utils.ok_dialog(heading='Finder Updater', text='[CR]Success.[CR]Finder Updated to version [B]%s[/B]' % new_version)
+			kodi_utils.ok_dialog(heading='Finder Updater', text='[CR]Success.[CR]Finder updated to version [B]%s[/B]' % new_version)
 	kodi_utils.update_local_addons()
 	kodi_utils.disable_enable_addon()
 	kodi_utils.update_kodi_addons_db()
-	refresh_widgets()
+	kodi_utils.refresh_widgets()

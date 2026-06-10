@@ -1,5 +1,5 @@
 
-With finder, you can assign a button on your remote/keyboard, via Kodi's keymap, to enact a context menu item from finder automatically.
+With Finder, you can assign a button on your remote/keyboard, via Kodi's keymap, to enact a context menu item from Finder automatically.
 
 Your choices for the mode parameter are:
 

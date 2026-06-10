@@ -10,7 +10,7 @@ from caches.lists_cache import lists_cache_object
 from modules import kodi_utils, settings
 from modules.metadata import movie_meta_external_id, tvshow_meta_external_id
 from modules.utils import sort_list, sort_for_article, get_datetime, timedelta, replace_html_codes, copy2clip, make_qrcode, make_tinyurl, \
-							make_thread_list, jsondate_to_datetime as js2date
+							TaskPool, jsondate_to_datetime as js2date
 # logger = kodi_utils.logger
 
 def no_client_key():
@@ -27,100 +27,54 @@ def get_trakt(params):
 	return result[0] if params.get('pagination', True) else result
 
 def call_trakt(path, params={}, data=None, is_delete=False, with_auth=True, method=None, pagination=False, page_no=1):
-	# --- FIX: Trakt-auth-loss bundle ---------------------------------------------------------
-	# Symptoms the user reported: "Trakt keeps losing authorisation after a few days" and the
-	# earlier debug log shows 429 hammering of POST /oauth/token. The root causes that the
-	# changes below address are:
-	#   1. send_query() reads `headers` (request headers) from the enclosing scope, but the
-	#      enclosing scope reassigned `headers = response.headers` after the first call. On
-	#      the 429-retry path send_query() therefore sent response-headers AS request-headers
-	#      (no trakt-api-key, no Authorization) -> Trakt 401 -> double-refresh storm.
-	#   2. `1000 * headers['Retry-After']` multiplies a STRING by 1000, producing a giant
-	#      string fed to sleep() (crash / forever sleep) and breaking the 429 retry entirely.
-	#   3. The 401 branch always called trakt_refresh_token() again even though send_query()
-	#      had just refreshed. With token rotation on Trakt's side this is the #1 way to
-	#      invalidate your refresh_token: two POSTs to /oauth/token with the same
-	#      refresh_token, the second gets `invalid_grant`, and a few cycles later the chain
-	#      breaks entirely -> user is silently logged out after a few days.
-	#   4. After a successful 401->refresh the original request was not retried, so the call
-	#      kept failing and callers (incl. the periodic service) would retrigger refreshes.
 	def send_query():
 		resp = None
 		if with_auth:
 			while kodi_utils.get_property('finder.trakt_refreshing_token') == 'true':
-				set_at = float(kodi_utils.get_property('finder.trakt_refreshing_token_at') or '0')
-				if time.time() - set_at > 30: break  # stale lock — previous holder crashed
 				kodi_utils.logger('refreshing trakt token', '')
 				kodi_utils.sleep(250)
 			try: expires_at = float(get_setting('finder.trakt.expires'))
 			except: expires_at = 0.0
-			# FIX (proactive refresh): refresh while the access token is still valid (within the
-			# next 7 days of expiry). A transient refresh failure no longer locks the user out.
-			if time.time() > (expires_at - 7*24*3600): trakt_refresh_token()
+			if time.time() > expires_at: trakt_refresh_token()
 			token = get_setting('finder.trakt.token')
-			if token: req_headers['Authorization'] = 'Bearer ' + token
+			if token: headers['Authorization'] = 'Bearer ' + token
 		try:
 			if method:
-				if method == 'post':
-					resp = requests.post(API_ENDPOINT % path, headers=req_headers, timeout=10)
-				elif method == 'delete':
-					resp = requests.delete(API_ENDPOINT % path, headers=req_headers, timeout=10)
-				elif method == 'sort_by_headers':
-					resp = requests.get(API_ENDPOINT % path, params=params, headers=req_headers, timeout=10)
+				if method == 'post': resp = requests.post(API_ENDPOINT % path, headers=headers, timeout=10)
+				elif method == 'delete': resp = requests.delete(API_ENDPOINT % path, headers=headers, timeout=10)
+				else: resp = requests.get(API_ENDPOINT % path, params=params, headers=headers, timeout=10)
 			elif data is not None:
 				assert not params
-				resp = requests.post(API_ENDPOINT % path, json=data, headers=req_headers, timeout=10)
-			elif is_delete: resp = requests.delete(API_ENDPOINT % path, headers=req_headers, timeout=10)
-			else: resp = requests.get(API_ENDPOINT % path, params=params, headers=req_headers, timeout=10)
+				resp = requests.post(API_ENDPOINT % path, json=data, headers=headers, timeout=10)
+			elif is_delete: resp = requests.delete(API_ENDPOINT % path, headers=headers, timeout=10)
+			else: resp = requests.get(API_ENDPOINT % path, params=params, headers=headers, timeout=10)
 			resp.raise_for_status()
 		except Exception as e: kodi_utils.logger('Trakt Error', str(e))
 		return resp
 	API_ENDPOINT = 'https://api.trakt.tv/%s'
 	CLIENT_ID = settings.trakt_client()
 	if CLIENT_ID in (None, 'empty_setting', ''): return no_client_key()
-	# FIX: keep request headers in their own dict (`req_headers`) so they survive the
-	# `resp_headers = response.headers` reassignment below and remain valid for retries.
-	req_headers = {'Content-Type': 'application/json', 'trakt-api-version': '2', 'trakt-api-key': CLIENT_ID}
+	headers = {'Content-Type': 'application/json', 'trakt-api-version': '2', 'trakt-api-key': CLIENT_ID}
 	if pagination: params['page'] = page_no
 	response = send_query()
 	try: status_code = response.status_code
 	except: return None
-	resp_headers = response.headers
+	headers = response.headers
 	if status_code == 401:
-		if with_auth and settings.trakt_user_active():
-			# FIX: only force a refresh here if send_query() did NOT already refresh during
-			# this call (otherwise we hit /oauth/token twice with the same refresh_token,
-			# which is the exact pattern that invalidates Trakt's rotating refresh tokens).
-			try: expires_at = float(get_setting('finder.trakt.expires'))
-			except: expires_at = 0.0
-			if time.time() > (expires_at - 7*24*3600): trakt_refresh_token()
-			# FIX: actually retry the original request once with the new access token.
-			response = send_query()
-			try: status_code = response.status_code
-			except: return None
-			resp_headers = response.headers
+		if with_auth:
+			if settings.trakt_user_active(): trakt_refresh_token()
+			else: return None
 		else: return None
-	if status_code == 429:
-		if 'Retry-After' in resp_headers:
-			# FIX: Retry-After is a string -- convert to int seconds before scaling to ms.
-			try: retry_after = int(resp_headers['Retry-After'])
-			except: retry_after = 2
-			kodi_utils.sleep(1000 * max(1, min(retry_after, 30)))
+	elif status_code == 429:
+		if 'Retry-After' in headers:
+			kodi_utils.sleep(1000 * headers['Retry-After'])
 			response = send_query()
-			try: status_code = response.status_code
-			except: return None
-			resp_headers = response.headers
 	response.encoding = 'utf-8'
-	if status_code == 204:
-		result = True
-	elif 'json' in resp_headers.get('Content-Type', ''):
-		result = response.json()
-	else:
-		result = response.text
+	result = response.json() if 'json' in headers.get('Content-Type', '') else response.text
 	if method == 'sort_by_headers':
-		try: result = sort_list(resp_headers.get('X-Sort-By', 'title'), resp_headers.get('X-Sort-How', 'asc'), result, settings.ignore_articles())
-		except: pass
-	if pagination: return (result, resp_headers.get('X-Pagination-Page-Count', page_no))
+		sort_by, sort_how = headers.get('X-Sort-By', 'title'), headers.get('X-Sort-How', 'asc')
+		result = {'sort_by': sort_by, 'sort_how': sort_how, 'data': result}
+	if pagination: return (result, headers.get('X-Pagination-Page-Count', page_no))
 	else: return result
 
 def trakt_get_device_code():
@@ -173,64 +127,22 @@ def trakt_get_device_token(device_codes):
 	return result
 
 def trakt_refresh_token():
-	# --- FIX: serialize refresh + back off on failure ---------------------------------------
-	# Previous behaviour: the `finder.trakt_refreshing_token` flag was set INSIDE this function
-	# after work began, so service-thread + UI-thread could both enter and POST /oauth/token
-	# with the SAME refresh_token; Trakt's rotation policy then invalidates the slower one.
-	# Combined with silent failure (`except: pass`) this is how auth quietly died after a
-	# few days. The version below:
-	#   * waits for any in-flight refresh to finish before doing anything,
-	#   * re-reads expires after waiting and skips if the other thread already refreshed
-	#     (so the now-rotated refresh_token isn't replayed),
-	#   * applies a 60s cooldown on failure so we don't hammer /oauth/token (avoids the 429
-	#     storm in the previous debug log),
-	#   * only touches stored credentials when Trakt returned a usable token payload.
 	try:
 		CLIENT_ID = settings.trakt_client()
 		if CLIENT_ID in (None, 'empty_setting', ''): return no_client_key()
 		CLIENT_SECRET = settings.trakt_secret()
 		if CLIENT_SECRET in (None, 'empty_setting', ''): return no_secret_key()
-		# Wait for any other thread already refreshing (max ~10s); treat lock as stale after 30s.
-		for _ in range(40):
-			if kodi_utils.get_property('finder.trakt_refreshing_token') != 'true': break
-			set_at = float(kodi_utils.get_property('finder.trakt_refreshing_token_at') or '0')
-			if time.time() - set_at > 30: break  # stale lock — previous holder crashed
-			kodi_utils.sleep(250)
-		# Re-check expiry after acquiring the lock: another thread may have just refreshed.
-		try: expires_at = float(get_setting('finder.trakt.expires'))
-		except: expires_at = 0.0
-		if time.time() < (expires_at - 7*24*3600):
-			return
-		# Cooldown after a failed attempt -- avoids a refresh storm.
-		try: last_failed_at = float(get_setting('finder.trakt.last_refresh_failed_at', '0'))
-		except: last_failed_at = 0.0
-		if time.time() < last_failed_at + 60:
-			return
 		kodi_utils.set_property('finder.trakt_refreshing_token', 'true')
-		kodi_utils.set_property('finder.trakt_refreshing_token_at', str(time.time()))
-		current_refresh = get_setting('finder.trakt.refresh')
-		if not current_refresh or current_refresh == '0':
-			return
-		payload = {
+		data = {        
 			'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET, 'redirect_uri': 'urn:ietf:wg:oauth:2.0:oob',
-			'grant_type': 'refresh_token', 'refresh_token': current_refresh}
-		response = call_trakt("oauth/token", data=payload, with_auth=False)
-		if isinstance(response, dict) and response.get('access_token') and response.get('refresh_token'):
+			'grant_type': 'refresh_token', 'refresh_token': get_setting('finder.trakt.refresh')}
+		response = call_trakt("oauth/token", data=data, with_auth=False)
+		if response:
 			set_setting('trakt.token', response['access_token'])
 			set_setting('trakt.refresh', response['refresh_token'])
 			set_setting('trakt.expires', str(time.time() + response['expires_in']))
-			set_setting('trakt.last_refresh_failed_at', '0')
-		else:
-			# Mark failure so the cooldown above suppresses immediate retries.
-			set_setting('trakt.last_refresh_failed_at', str(time.time()))
-			kodi_utils.logger('finder', 'Trakt refresh did not return new tokens; backing off 60s')
-	except Exception as e:
-		try: set_setting('trakt.last_refresh_failed_at', str(time.time()))
-		except: pass
-		kodi_utils.logger('finder', 'Trakt refresh exception: %s' % str(e))
-	finally:
-		kodi_utils.clear_property('finder.trakt_refreshing_token')
-		kodi_utils.clear_property('finder.trakt_refreshing_token_at')
+	except: pass
+	kodi_utils.clear_property('finder.trakt_refreshing_token')
 
 def trakt_authenticate(dummy=''):
 	code = trakt_get_device_code()
@@ -252,7 +164,6 @@ def trakt_authenticate(dummy=''):
 	return False
 
 def trakt_revoke_authentication(dummy=''):
-	current_token = get_setting('finder.trakt.token')
 	set_setting('trakt.user', 'empty_setting')
 	set_setting('trakt.expires', '0')
 	set_setting('trakt.token', '0')
@@ -265,8 +176,13 @@ def trakt_revoke_authentication(dummy=''):
 	if CLIENT_ID in (None, 'empty_setting', ''): return no_client_key()
 	CLIENT_SECRET = settings.trakt_secret()
 	if CLIENT_SECRET in (None, 'empty_setting', ''): return no_secret_key()
-	data = {'token': current_token, 'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET}
+	data = {'token': get_setting('finder.trakt.token'), 'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET}
 	response = call_trakt("oauth/revoke", data=data, with_auth=False)
+
+def trakt_movies_related(imdb_id):
+	string = 'trakt_movies_related_%s' % imdb_id
+	params = {'path': 'movies/%s/related?extended=full', 'path_insert': imdb_id, 'params': {'limit': 20}}
+	return lists_cache_object(get_trakt, string, params)
 
 def trakt_movies_trending(page_no):
 	string = 'trakt_movies_trending_%s' % page_no
@@ -298,8 +214,13 @@ def trakt_movies_most_favorited(page_no):
 def trakt_recommendations(media_type):
 	string = 'trakt_recommendations_%s' % (media_type)
 	params = {'path': '/recommendations/%s', 'path_insert': media_type, 'with_auth': True,
-			'params': {'limit': 50, 'ignore_collected': 'true', 'ignore_watchlisted': 'true'}, 'pagination': False}
+				'params': {'limit': 50, 'ignore_collected': 'true', 'ignore_watchlisted': 'true'}, 'pagination': False}
 	return trakt_cache.cache_trakt_object(get_trakt, string, params)
+
+def trakt_tv_related(imdb_id):
+	string = 'trakt_tv_related_%s' % imdb_id
+	params = {'path': 'shows/%s/related?extended=full', 'path_insert': imdb_id, 'params': {'limit': 20}}
+	return lists_cache_object(get_trakt, string, params)
 
 def trakt_tv_trending(page_no):
 	string = 'trakt_tv_trending_%s' % page_no
@@ -373,13 +294,14 @@ def trakt_get_hidden_items(list_type):
 	def _get_trakt_ids(item):
 		results_append(get_trakt_tvshow_id(item['show']['ids']))
 	def _process(params):
-		threads = list(make_thread_list(_get_trakt_ids, get_trakt(params)))
+		data = get_trakt(params)
+		threads = TaskPool().tasks(_get_trakt_ids, data, min(len(data), settings.max_threads()))
 		[i.join() for i in threads]
 		return results
 	results = []
 	results_append = results.append
 	string = 'trakt_hidden_items_%s' % list_type
-	params = {'path': 'users/hidden/%s', 'path_insert': list_type, 'params': {'limit': 1500, 'type': 'show'}, 'with_auth': True, 'pagination': False}
+	params = {'path': 'users/hidden/%s', 'path_insert': list_type, 'params': {'limit': 999, 'type': 'show'}, 'with_auth': True, 'pagination': False}
 	return trakt_cache.cache_trakt_object(_process, string, params)
 
 def trakt_watched_status_mark(action, media, media_id, tvdb_id=0, season=None, episode=None, key='tmdb'):
@@ -457,7 +379,7 @@ def trakt_fetch_collection_watchlist(list_type, media_type):
 	collected_at = 'listed_at' if list_type == 'watchlist' else 'collected_at' if media_type == 'movie' else 'last_collected_at'
 	string = 'trakt_%s_%s' % (list_type, string_insert)
 	path = 'sync/%s/%s?extended=full'
-	params = {'path': path, 'path_insert': (list_type, url_type), 'with_auth': True, 'pagination': False}
+	params = {'path': path, 'path_insert': (list_type, url_type), 'params': {'limit': 999}, 'with_auth': True, 'pagination': False}
 	return trakt_cache.cache_trakt_object(_process, string, params)
 
 def add_to_list(user, slug, data):
@@ -547,29 +469,48 @@ def trakt_lists_with_media(media_type, imdb_id):
 	params = {'path': '%s/%s/lists/personal', 'path_insert': (media_type, imdb_id), 'params': {'limit': 100}, 'pagination': False}
 	return cache_object(_process, string, 'foo', False, 168)
 
-def get_trakt_list_contents(list_type, user, slug, with_auth):
-	def _process(params):
-		results = []
-		results_append = results.append
-		data = get_trakt(params)
-		for c, i in enumerate(data):
-			try:
-				_type = i['type']
-				if _type in ('movie', 'show'):
-					r_key = 'released' if _type == 'movie' else 'first_aired'
-					data = {'media_ids': i[_type]['ids'], 'title': i[_type]['title'], 'type': _type, 'order': c, 'released': i[_type][r_key], 'media_type': _type}
-				elif _type == 'season':
-					data = {'tmdb_id': i['show']['ids']['tmdb'], 'season': i[_type]['number'], 'type': _type, 'custom_order': c}
-				elif _type == 'episode':
-					data = {'media_ids': i['show']['ids'], 'title': i['show']['title'], 'type': _type,
-							'season': i[_type]['season'], 'episode': i[_type]['number'], 'custom_order': c}
-				results_append(data)
-			except: pass
-		return results
-	string = 'trakt_list_contents_%s_%s_%s' % (list_type, user, slug)
-	if user == 'Trakt Official': params = {'path': 'lists/%s/items', 'path_insert': slug, 'params': {'extended':'full'}, 'method': 'sort_by_headers'}
-	else: params = {'path': 'users/%s/lists/%s/items', 'path_insert': (user, slug), 'params': {'extended':'full'}, 'with_auth': with_auth, 'method': 'sort_by_headers'}
-	return trakt_cache.cache_trakt_object(_process, string, params)
+def get_trakt_list_contents(list_type, user, slug, with_auth, list_id=None, sort_by='default', sort_how='default'):
+	if sort_by == 'skip': skip_sort, custom_sort, method = True, False, None
+	else:
+		skip_sort = False
+		custom_sort = sort_by != 'default'
+		method = None if custom_sort else 'sort_by_headers'
+	if list_type == 'my_lists':
+		string = 'trakt_list_contents_%s_%s_%s' % (list_type, user, slug)
+		params = {'path': 'users/%s/lists/%s/items', 'path_insert': (user, slug), 'params': {'extended':'full', 'limit': 999}, 'method': method, 'with_auth': with_auth}
+	elif list_id is not None:
+		string = 'trakt_list_contents_%s_%s' % (list_type, list_id)
+		params = {'path': 'users/%s/lists/%s/items', 'path_insert': (user, list_id), 'params': {'extended':'full', 'limit': 999}, 'method': method}
+	else:
+		string = 'trakt_list_contents_%s_%s_%s' % (list_type, user, slug)
+		if user == 'Trakt Official': params = {'path': 'lists/%s/items', 'path_insert': slug, 'params': {'extended':'full', 'limit': 999}, 'method': method}
+		else: params = {'path': 'users/%s/lists/%s/items', 'path_insert': (user, slug), 'params': {'extended':'full', 'limit': 999}, 'method': method, 'with_auth': with_auth}
+	data = trakt_cache.cache_trakt_object(get_trakt, string, params)
+	if not skip_sort:
+		if not custom_sort:
+			sort_by, sort_how = data['sort_by'], data['sort_how']
+			data = data['data']
+		for i in data:
+			if i['type'] == 'season': i['season']['title'] = '%s - %s' % (i['show']['title'], i['season']['title'])
+			elif i['type'] == 'episode': i['episode']['title'] = '%s - %s' % (i['show']['title'], i['episode']['title'])
+			else: pass
+		data = sort_list(sort_by, sort_how, data, settings.ignore_articles())
+	results = []
+	results_append = results.append
+	for c, i in enumerate(data):
+		try:
+			_type = i['type']
+			if _type in ('movie', 'show'):
+				r_key = 'released' if _type == 'movie' else 'first_aired'
+				data = {'media_ids': i[_type]['ids'], 'title': i[_type]['title'], 'type': _type, 'order': c, 'released': i[_type][r_key], 'media_type': _type}
+			elif _type == 'season':
+				data = {'tmdb_id': i['show']['ids']['tmdb'], 'season': i[_type]['number'], 'type': _type, 'custom_order': c}
+			elif _type == 'episode':
+				data = {'media_ids': i['show']['ids'], 'title': i['show']['title'], 'type': _type,
+						'season': i[_type]['season'], 'episode': i[_type]['number'], 'custom_order': c}
+			results_append(data)
+		except: pass
+	return results
 
 def trakt_get_lists(list_type, page_no='1'):
 	if list_type in ('trending', 'popular'):
@@ -579,7 +520,7 @@ def trakt_get_lists(list_type, page_no='1'):
 	else:
 		if list_type == 'my_lists': string, path = 'trakt_my_lists', 'users/me/lists%s'
 		elif list_type == 'liked_lists': string, path = 'trakt_liked_lists', 'users/likes/lists%s'
-		params = {'path': path, 'params': {'limit': 1000}, 'pagination': False, 'with_auth': True}
+		params = {'path': path, 'params': {'limit': 999}, 'pagination': False, 'with_auth': True}
 		return trakt_cache.cache_trakt_object(get_trakt, string, params)
 
 def get_trakt_list_selection(included_lists):
@@ -593,13 +534,14 @@ def get_trakt_list_selection(included_lists):
 	def personal_lists():
 		trakt_my_lists = trakt_get_lists('my_lists')
 		_lists = [{'name': item['name'], 'display': '[B]PERSONAL:[/B] [I]%s[/I]' % item['name'].upper(), 'user': item['user']['ids']['slug'],
-					'slug': item['ids']['slug'], 'list_type': 'my_lists', 'item_count': item['item_count']} for item in trakt_my_lists]
+			'slug': item['ids']['slug'], 'list_type': 'my_lists', 'list_id': item['ids']['trakt'], 'item_count': item['item_count']} for item in trakt_my_lists]
 		_lists.sort(key=lambda k: k['name'])
 		return _lists
 	def liked_lists():
 		trakt_liked_lists = trakt_get_lists('liked_lists')
 		_lists = [{'name': item['list']['name'], 'display': '[B]LIKED:[/B] [I]%s[/I]' % item['list']['name'].upper(), 'user': item['list']['user']['ids']['slug'],
-						'slug': item['list']['ids']['slug'], 'list_type': 'liked_lists', 'item_count': item['list']['item_count']} for item in trakt_liked_lists]
+			'slug': item['list']['ids']['slug'], 'list_type': 'liked_lists', 'list_id': item['list']['ids']['trakt'], 'item_count': item['list']['item_count']} \
+			for item in trakt_liked_lists]
 		_lists.sort(key=lambda k: (k['display']))
 		return _lists
 	list_dict = {'default': default_lists, 'personal': personal_lists, 'liked': liked_lists}
@@ -632,11 +574,11 @@ def delete_trakt_list(params):
 	kodi_utils.kodi_refresh()
 
 def trakt_like_a_list(params):
-	user = params['user']
-	list_slug = params['list_slug']
+	user, list_slug, list_id = params.get('user'), params.get('list_slug'), params.get('list_id')
 	refresh = params.get('refresh', 'true') == 'true'
 	try:
-		call_trakt('/users/%s/lists/%s/like' % (user, list_slug), method='post')
+		if list_id is not None: call_trakt('/lists/%s/like' % list_id, method='post')
+		else: call_trakt('/users/%s/lists/%s/like' % (user, list_slug), method='post')
 		kodi_utils.notification('Success - Trakt List Liked', 3000)
 		trakt_sync_activities()
 		if refresh: kodi_utils.kodi_refresh()
@@ -646,11 +588,11 @@ def trakt_like_a_list(params):
 		return False
 
 def trakt_unlike_a_list(params):
-	user = params['user']
-	list_slug = params['list_slug']
+	user, list_slug, list_id = params.get('user'), params.get('list_slug'), params.get('list_id')
 	refresh = params.get('refresh', 'true') == 'true'
 	try:
-		call_trakt('/users/%s/lists/%s/like' % (user, list_slug), method='delete')
+		if list_id is not None: call_trakt('/lists/%s/like' % list_id, method='delete')
+		else: call_trakt('/users/%s/lists/%s/like' % (user, list_slug), method='delete')
 		kodi_utils.notification('Success - Trakt List Unliked', 3000)
 		trakt_sync_activities()
 		if refresh: kodi_utils.kodi_refresh()
@@ -689,40 +631,48 @@ def get_trakt_tvshow_id(item):
 
 def trakt_indicators_movies():
 	def _process(item):
-		movie = item['movie']
-		tmdb_id = get_trakt_movie_id(movie['ids'])
-		if not tmdb_id: return
-		insert_append(('movie', tmdb_id, '', '', item['last_watched_at'], movie['title']))
-	insert_list = []
-	insert_append = insert_list.append
-	params = {'path': 'sync/watched/movies%s', 'with_auth': True, 'pagination': False}
-	result = get_trakt(params)
-	threads = list(make_thread_list(_process, result))
-	[i.join() for i in threads]
-	trakt_cache.trakt_watched_cache.set_bulk_movie_watched(insert_list)
+		try:
+			movie = item['movie']
+			tmdb_id = get_trakt_movie_id(movie['ids'])
+			if not tmdb_id: return
+			insert_append(('movie', tmdb_id, '', '', item['last_watched_at'], movie['title']))
+		except: pass
+	try:
+		insert_list = []
+		insert_append = insert_list.append
+		params = {'path': 'sync/watched/movies%s', 'with_auth': True, 'pagination': False}
+		result = get_trakt(params)
+		threads = TaskPool().tasks(_process, result, min(len(result), settings.max_threads()))
+		[i.join() for i in threads]
+		trakt_cache.trakt_watched_cache.set_bulk_movie_watched(insert_list)
+	except: pass
 
 def trakt_indicators_tv():
 	def _process(item):
-		reset_at = item.get('reset_at', None)
-		if reset_at: reset_at = js2date(reset_at, '%Y-%m-%dT%H:%M:%S.%fZ')
-		show = item['show']
-		seasons = item['seasons']
-		title = show['title']
-		tmdb_id = get_trakt_tvshow_id(show['ids'])
-		if not tmdb_id: return
-		for s in seasons:
-			season_no, episodes = s['number'], s['episodes']
-			for e in episodes:
-				last_watched_at = e['last_watched_at']
-				if reset_at and reset_at > js2date(last_watched_at, '%Y-%m-%dT%H:%M:%S.%fZ'): continue
-				insert_append(('episode', tmdb_id, season_no, e['number'], last_watched_at, title))
-	insert_list = []
-	insert_append = insert_list.append
-	params = {'path': 'users/me/watched/shows?extended=full%s', 'with_auth': True, 'pagination': False}
-	result = get_trakt(params)
-	threads = list(make_thread_list(_process, result))
-	[i.join() for i in threads]
-	trakt_cache.trakt_watched_cache.set_bulk_tvshow_watched(insert_list)
+		try:
+			reset_at = item.get('reset_at', None)
+			if reset_at: reset_at = js2date(reset_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+			show = item['show']
+			seasons = item['seasons']
+			title = show['title']
+			tmdb_id = get_trakt_tvshow_id(show['ids'])
+			if not tmdb_id: return
+			for s in seasons:
+				season_no, episodes = s['number'], s['episodes']
+				for e in episodes:
+					last_watched_at = e['last_watched_at']
+					if reset_at and reset_at > js2date(last_watched_at, '%Y-%m-%dT%H:%M:%S.%fZ'): continue
+					insert_append(('episode', tmdb_id, season_no, e['number'], last_watched_at, title))
+		except: pass
+	try:
+		insert_list = []
+		insert_append = insert_list.append
+		params = {'path': 'users/me/watched/shows?extended=full%s', 'with_auth': True, 'pagination': False}
+		result = get_trakt(params)
+		threads = TaskPool().tasks(_process, result, min(len(result), settings.max_threads()))
+		[i.join() for i in threads]
+		trakt_cache.trakt_watched_cache.set_bulk_tvshow_watched(insert_list)
+	except: pass
 
 def trakt_playback_progress():
 	params = {'path': 'sync/playback%s', 'with_auth': True, 'pagination': False}
@@ -758,7 +708,7 @@ def trakt_progress_movies(progress_info):
 	insert_append = insert_list.append
 	progress_items = [i for i in progress_info  if i['type'] == 'movie' and i['progress'] > 1]
 	if not progress_items: return
-	threads = list(make_thread_list(_process, progress_items))
+	threads = TaskPool().tasks(_process, progress_items, min(len(progress_items), settings.max_threads()))
 	[i.join() for i in threads]
 	trakt_cache.trakt_watched_cache.set_bulk_movie_progress(insert_list)
 
@@ -784,7 +734,7 @@ def trakt_progress_tv(progress_info):
 	if not progress_items: return
 	all_shows = [i['show'] for i in progress_items]
 	all_shows = [i for n, i in enumerate(all_shows) if not i in all_shows[n + 1:]] # remove duplicates
-	threads = list(make_thread_list(_process_tmdb_ids, all_shows))
+	threads = TaskPool().tasks(_process_tmdb_ids, all_shows, min(len(all_shows), settings.max_threads()))
 	[i.join() for i in threads]
 	insert_list = list(_process())
 	trakt_cache.trakt_watched_cache.set_bulk_tvshow_progress(insert_list)
@@ -815,7 +765,7 @@ def trakt_get_my_calendar(recently_aired, current_date):
 		return data
 	start, finish = trakt_calendar_days(recently_aired, current_date)
 	string = 'trakt_get_my_calendar_%s_%s' % (start, finish)
-	params = {'path': 'calendars/my/shows/%s/%s', 'path_insert': (start, finish), 'with_auth': True, 'pagination': False}
+	params = {'path': 'calendars/my/shows/%s/%s', 'path_insert': (start, finish), 'params': {'limit': 999}, 'with_auth': True, 'pagination': False}
 	return trakt_cache.cache_trakt_object(_process, string, params)
 
 def trakt_calendar_days(recently_aired, current_date):
@@ -844,12 +794,11 @@ def trakt_sync_activities(force_update=False):
 	# 	from modules.watched_status import clear_cache_watched_tvshow_status
 	# 	clear_cache_watched_tvshow_status(watched_indicators=1)
 	def refresh_token_check():
-		# FIX: align with the 7-day proactive-refresh window used in call_trakt/trakt_refresh_token
-		# so the periodic service doesn't keep poking refresh on a different threshold.
 		current_time = time.time()
+		sync_interval = int(get_setting('finder.trakt.sync_interval', '60')) * 60
 		try: expires_at = float(get_setting('finder.trakt.expires'))
 		except: expires_at = 0.0
-		if current_time >= (expires_at - 7*24*3600): return True
+		if current_time + sync_interval >= expires_at: return True
 	def clear_properties(media_type):
 		for item in ((True, True), (True, False), (False, True), (False, False)): kodi_utils.clear_property('1_%s_%s_%s_watched' % (media_type, item[0], item[1]))
 	def _get_timestamp(date_time):

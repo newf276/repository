@@ -1,24 +1,44 @@
 # -*- coding: utf-8 -*-
-import json
 from datetime import datetime
 from threading import Thread
 from apis.trakt_api import trakt_watched_status_mark, trakt_official_status, trakt_progress, trakt_get_hidden_items
 from caches.base_cache import connect_database, database
 from caches.trakt_cache import clear_trakt_collection_watchlist_data
 from modules.kodi_utils import kodi_progress_background, sleep, get_video_database_path, notification, kodi_refresh
-from modules.utils import get_datetime, adjust_premiered_date, sort_for_article, make_thread_list
+from modules.utils import get_datetime, adjust_premiered_date, sort_for_article, TaskPool
 from modules import metadata, settings
 # from modules.kodi_utils import logger
 
 def get_database(watched_indicators=None):
 	return connect_database({0: 'watched_db', 1: 'trakt_db'}[watched_indicators or settings.watched_indicators()])
 
+# def cache_watched_tvshow_status(function, status_type, watched_indicators=None):
+# 	watched_indicators = watched_indicators or settings.watched_indicators()
+# 	dbcon = get_database(watched_indicators)
+# 	cache = dbcon.execute('SELECT media_id, status FROM watched_status WHERE db_type = ?', (status_type,)).fetchone()
+# 	if cache is not None:
+# 		expiration, result = cache
+# 		if int(expiration) > get_timestamp(): return eval(result)
+# 		clear_cache_watched_tvshow_status(watched_indicators, (status_type,))
+# 	result = function(status_type)
+# 	dbcon.execute('INSERT OR REPLACE INTO watched_status VALUES (?, ?, ?)', (status_type, get_timestamp(12), repr(result)))
+# 	return result or []
+
+# def clear_cache_watched_tvshow_status(watched_indicators=None, status_types=('watched', 'progress')):
+# 	try:
+# 		watched_indicators = watched_indicators or settings.watched_indicators()
+# 		dbcon = get_database()
+# 		for status in status_types: dbcon.execute('DELETE FROM watched_status WHERE db_type = ?', (status,))
+# 		dbcon.execute('VACUUM')
+# 		return True
+# 	except: return False
+
 def get_hidden_progress_items(watched_indicators):
 	try:
 		if watched_indicators == 0:
 			watched_db = get_database()
 			watched_info = watched_db.execute('SELECT status FROM watched_status WHERE db_type = ?', ('hidden_progress_items',)).fetchone()[0]
-			return json.loads(watched_info) or []
+			return eval(watched_info) or []
 		else: return trakt_get_hidden_items('dropped')
 	except: return []
 
@@ -37,7 +57,7 @@ def hide_unhide_progress_items(params):
 	if action == 'drop': current_items.append(media_id)
 	else: current_items.remove(media_id)
 	watched_db = get_database()
-	watched_info = watched_db.execute('INSERT OR REPLACE INTO watched_status VALUES (?, ?, ?)', ('hidden_progress_items', 'hidden', json.dumps(current_items),))
+	watched_info = watched_db.execute('INSERT OR REPLACE INTO watched_status VALUES (?, ?, ?)', ('hidden_progress_items', 'hidden', repr(current_items),))
 	if refresh: kodi_refresh()
 
 def get_last_played_value(watched_indicators):
@@ -77,7 +97,7 @@ def active_tvshows_information(status_type):
 	progress_location = settings.tv_progress_location()
 	if status_type == 'watched': include_other = progress_location in (0, 2)
 	else: include_other = progress_location in (1, 2)
-	threads = list(make_thread_list(_process, data))
+	threads = TaskPool().tasks(_process, data, min(len(data), settings.max_threads()))
 	[i.join() for i in threads]
 	return results
 
@@ -175,13 +195,11 @@ def get_bookmarks_episode(media_id, season, watched_db=None):
 def get_bookmarks_all_episode(media_id, total_seasons, watched_db=None):
 	if not watched_db: watched_db = get_database()
 	all_seasons_info = {}
-	try:
-		rows = watched_db.execute(
-			'SELECT season, episode, resume_point, curr_time, resume_id FROM progress WHERE db_type = ? AND media_id = ?',
-			('episode', str(media_id))).fetchall()
-		for row in rows:
-			all_seasons_info.setdefault(row[0], {})[row[1]] = {'resume_point': row[2], 'curr_time': row[3], 'resume_id': row[4]}
-	except: pass
+	for season in range(1, total_seasons + 1):
+		try:
+			season_info = get_bookmarks_episode(media_id, season, watched_db)
+			all_seasons_info[season] = season_info
+		except: pass
 	return all_seasons_info
 
 def get_progress_status_episode(progress_info, episode):

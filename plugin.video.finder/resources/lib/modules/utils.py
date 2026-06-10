@@ -6,25 +6,24 @@ import random
 import _strptime
 import unicodedata
 from html import unescape
-from queue import Queue, Empty
-from threading import Thread, active_count
+from queue import SimpleQueue
+from threading import Thread, activeCount
 from importlib import import_module
 from datetime import datetime, timedelta, date
 from modules.settings import max_threads
-from modules.kodi_utils import sleep
-# from modules.kodi_utils import logger
+from modules.kodi_utils import sleep, logger
 
 class TaskPool:
 	def __init__(self):
-		self._queue = Queue()
+		self._queue = SimpleQueue()
 
 	def _thread_target(self, queue, target):
-		while True:
-			try: target(*queue.get(block=False))
-			except Empty: break
-			except: pass
+		while not queue.empty():
+			try: target(*queue.get())
+			except Exception as e: logger('thread queue error', str(e))
 
 	def tasks(self, _target, _list, _max_size=60):
+		if not isinstance(_list[0], tuple): _list = [(i,) for i in _list]
 		[self._queue.put(tag) for tag in _list]
 		threads = [Thread(target=self._thread_target, args=(self._queue, _target)) for i in range(_max_size)]
 		[i.start() for i in threads]
@@ -39,7 +38,7 @@ class TaskPool:
 def make_thread_list(_target, _list):
 	_max_threads = max_threads()
 	for item in _list:
-		while active_count() > _max_threads: sleep(1)
+		while activeCount() > _max_threads: sleep(1)
 		threaded_object = Thread(target=_target, args=(item,))
 		threaded_object.start()
 		yield threaded_object
@@ -47,7 +46,7 @@ def make_thread_list(_target, _list):
 def make_thread_list_enumerate(_target, _list):
 	_max_threads = max_threads()
 	for count, item in enumerate(_list):
-		while active_count() > _max_threads: sleep(1)
+		while activeCount() > _max_threads: sleep(1)
 		threaded_object = Thread(target=_target, args=(count, item))
 		threaded_object.start()
 		yield threaded_object
@@ -334,12 +333,11 @@ def unzip(zip_location, destination_location, destination_check, show_busy=True)
 
 def make_qrcode(url):
 	if url == None: return
-	import segno, hashlib
+	import segno
 	from os import path
 	from modules.kodi_utils import addon_profile
 	try:
-		url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()[:8]
-		art_path = path.join(addon_profile(), 'qr_%s.png' % url_hash)
+		art_path = path.join(addon_profile(), 'qr.png')
 		qrcode = segno.make(url, micro=False)
 		qrcode.save(art_path, scale=20)
 	except: return

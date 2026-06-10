@@ -94,7 +94,6 @@ def build_menu():
 
 def submenu_maintenance():
     xbmcplugin.setPluginCategory(HANDLE, COLOR1(local_string(30022)))  # Maintenance
-    add_dir(COLOR1('[B]Maintenance[/B]'),'','',addon_icon,addon_fanart, COLOR1('Clear Thumbnails, old Packages, reduce clutter, keep your system efficent by doing regular Maintenance'),isFolder=False)
     add_dir(COLOR2(local_string(30023)),'',6,addon_icon,addon_fanart,COLOR2(local_string(30005)),isFolder=False)  # Clear Packages
     add_dir(COLOR2(local_string(30024)),'',7,addon_icon,addon_fanart,COLOR2(local_string(30008)),isFolder=False)  # Clear Thumbnails
     add_dir(COLOR2('Speedtest'),'',28,addon_icon,addon_fanart,COLOR2('Perform Network Speedtest'), isFolder=False)

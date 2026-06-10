@@ -16,7 +16,7 @@ def open_file(file_path):
 def authorize_menu():
     file = open_file(AUTH_FILE)
     file = json.loads(file)
-    add_dir(COLOR1('[B]Authorize Services[/B]'), '', '', addon_icon, addon_fanart, COLOR1('Authorize Your Premium Kodi Services, like Trakt, Real-Debrid or Premiumize'))
+
     for key in file.keys():
         add_dir(COLOR2(key), '', 27, file[key]['icon'], file[key]['icon'], COLOR2(key), name2=key)
 

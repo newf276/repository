@@ -1,15 +1,25 @@
 # -*- coding: utf-8 -*-
 from xbmc import getInfoLabel
 from urllib.parse import parse_qsl
+from modules import kodi_utils
 from modules.kodi_utils import external, get_property
 # from modules.kodi_utils import logger
 
 def sys_exit_check():
-	if get_property('finder.reuse_language_invoker') == 'false': return False
+	from caches.settings_cache import get_setting
+	if get_setting('finder.reuse_language_invoker', 'true') == 'false': return False
 	return external()
 
 def routing(sys):
 	params = dict(parse_qsl(sys.argv[2][1:], keep_blank_values=True))
+	if not external():
+		from caches.settings_cache import bootstrap_settings_properties, refresh_widgets_after_db_migration, run_deferred_setup_if_needed
+		try: bootstrap_settings_properties()
+		except Exception as e: kodi_utils.logger('routing', 'bootstrap: %s' % e)
+		try: refresh_widgets_after_db_migration()
+		except Exception as e: kodi_utils.logger('routing', 'refresh widgets: %s' % e)
+		try: run_deferred_setup_if_needed()
+		except Exception as e: kodi_utils.logger('routing', 'deferred: %s' % e)
 	mode = params.get('mode', 'navigator.main')
 	if 'navigator.' in mode:
 		from indexers.navigator import Navigator
@@ -107,6 +117,9 @@ def routing(sys):
 		elif mode == 'search.clear_all':
 			from modules.search import clear_all
 			return clear_all(params.get('setting_id'), params.get('refresh', 'false'))
+		elif mode == 'search.clear_easynews_search_history':
+			from modules.search import clear_easynews_search_history
+			return clear_easynews_search_history(params.get('refresh', 'false'))
 	elif 'real_debrid' in mode:
 		if mode == 'real_debrid.rd_cloud':
 			from indexers.real_debrid import rd_cloud
@@ -157,7 +170,7 @@ def routing(sys):
 	elif 'alldebrid' in mode:
 		if mode == 'alldebrid.ad_cloud':
 			from indexers.alldebrid import ad_cloud
-			return ad_cloud(params.get('id', None))
+			return ad_cloud()
 		elif mode == 'alldebrid.ad_downloads':
 			from indexers.alldebrid import ad_downloads
 			return ad_downloads()
@@ -182,10 +195,38 @@ def routing(sys):
 		elif mode == 'alldebrid.delete':
 			from indexers.alldebrid import ad_delete
 			return ad_delete(params.get('id'))
+	elif 'offcloud' in mode:
+		if mode == 'offcloud.oc_cloud':
+			from indexers.offcloud import oc_cloud
+			return oc_cloud()
+		elif mode == 'offcloud.oc_history':
+			from indexers.offcloud import oc_history
+			return oc_history()
+		elif mode == 'offcloud.browse_oc_cloud':
+			from indexers.offcloud import browse_oc_cloud
+			return browse_oc_cloud(params.get('folder_id'))
+		elif mode == 'offcloud.resolve_oc':
+			from indexers.offcloud import resolve_oc
+			return resolve_oc(params)
+		elif mode == 'offcloud.oc_account_info':
+			from indexers.offcloud import oc_account_info
+			return oc_account_info()
+		elif mode == 'offcloud.authenticate':
+			from apis.offcloud_api import OffcloudAPI
+			return OffcloudAPI().auth()
+		elif mode == 'offcloud.revoke_authentication':
+			from apis.offcloud_api import OffcloudAPI
+			return OffcloudAPI().revoke()
+		elif mode == 'offcloud.delete':
+			from indexers.offcloud import oc_delete
+			return oc_delete(params.get('folder_id'))
 	elif 'torbox' in mode:
 		if mode == 'torbox.tb_cloud':
 			from indexers.torbox import tb_cloud
 			return tb_cloud()
+		elif mode == 'torbox.tb_history':
+			from indexers.torbox import tb_history
+			return tb_history()
 		elif mode == 'torbox.browse_tb_cloud':
 			from indexers.torbox import browse_tb_cloud
 			return browse_tb_cloud(params.get('folder_id'), params.get('media_type'))
@@ -204,6 +245,9 @@ def routing(sys):
 		elif mode == 'torbox.delete':
 			from indexers.torbox import tb_delete
 			return tb_delete(params.get('folder_id'), params.get('media_type'))
+		elif mode == 'torbox.send_webdl':
+			from indexers.torbox import tb_send_webdl
+			tb_send_webdl()
 	elif 'tmdblist_api' in mode:
 		if mode == 'tmdblist_api.authenticate':
 			from apis.tmdblist_api import TMDbListAPI
@@ -242,6 +286,9 @@ def routing(sys):
 		from modules import updater
 		return exec('updater.%s()' % mode.split('.')[1])
 	##EXTRA modes##
+	elif 'local_backup.' in mode:
+		from modules import local_backup
+		return getattr(local_backup, mode.split('.', 1)[1])(params)
 	elif mode == 'set_view':
 		from modules.kodi_utils import set_view
 		return kodi_utils.set_view(params.get('view_type'))
@@ -256,7 +303,7 @@ def routing(sys):
 		return kodi_refresh()
 	elif mode == 'refresh_widgets':
 		from modules.kodi_utils import refresh_widgets
-		return refresh_widgets()
+		return refresh_widgets(params.get('silent', 'false') == 'true', params.get('reload_skin', 'false') == 'true')
 	elif mode == 'person_data_dialog':
 		from indexers.people import person_data_dialog
 		return person_data_dialog(params)

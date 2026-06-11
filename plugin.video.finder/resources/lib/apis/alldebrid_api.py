@@ -17,7 +17,7 @@ class AllDebridAPI:
 		self.token = get_setting('finder.ad.token', 'empty_setting')
 		self.break_auth_loop = False
 		self.base_url = 'https://api.alldebrid.com/v4/'
-		self.user_agent = 'Finder for Kodi'
+		self.user_agent = 'Finder'
 
 	def auth(self):
 		self.token = ''
@@ -31,8 +31,8 @@ class AllDebridAPI:
 		qr_code = make_qrcode(auth_url) or ''
 		short_url = make_tinyurl(auth_url)
 		copy2clip(auth_url)
-		if short_url: p_dialog_insert = 'OR visit this URL: [B]%s[/B][CR]OR Enter this Code: [B]%s[/B]' % (short_url, user_code)
-		else: p_dialog_insert = 'OR Enter this Code: [B]%s[/B]' % user_code
+		if short_url: p_dialog_insert = '[CR]Full link copied to clipboard[CR]OR visit: [B]%s[/B][CR]OR Enter this Code: [B]%s[/B]' % (short_url, user_code)
+		else: p_dialog_insert = '[CR]Full link copied to clipboard[CR]OR Enter this Code: [B]%s[/B]' % user_code
 		sleep_interval = 5
 		content = 'Please Scan the QR Code%s[CR]' % p_dialog_insert
 		progressDialog = progress_dialog('All Debrid Authorize', qr_code)
@@ -76,27 +76,77 @@ class AllDebridAPI:
 		return response
 
 	def check_cache(self, hashes):
-		data = {'magnets[]': hashes}
-		response = self._post('magnet/instant', data)
-		return response
+		if isinstance(hashes, str): hashes = [hashes]
+		if not hashes or self.token in ('empty_setting', ''): return None
+		params = [('agent', self.user_agent), ('apikey', self.token)]
+		for h in hashes:
+			h = str(h).lower()
+			if len(h) == 40:
+				params.append(('magnets[]', h))
+		if len(params) <= 2: return None
+		try:
+			result = requests.get('%smagnet/instant' % self.base_url, params=params, timeout=20).json()
+			if result.get('status') != 'success': return None
+			data = result.get('data') or result
+			if isinstance(data, dict) and 'magnets' in data: return data
+			if isinstance(data, list): return {'magnets': data}
+		except: pass
+		return None
 
 	def check_single_magnet(self, hash_string):
-		cache_info = self.check_cache(hash_string)['magnets'][0]
-		return cache_info['instant']
+		response = self.check_cache([hash_string])
+		if not response or 'magnets' not in response or not response['magnets']: return False
+		cache_info = response['magnets'][0]
+		if cache_info.get('error'): return False
+		instant = cache_info.get('instant')
+		if instant is True or instant == 1: return True
+		if str(instant).lower() in ('true', '1', 'yes'): return True
+		ready = cache_info.get('ready')
+		if ready is True or ready == 1: return True
+		return str(ready).lower() in ('true', '1', 'yes')
 
-	def user_cloud(self):
+	def _delete_cache_key(self, string):
+		try:
+			from caches.base_cache import connect_database
+			dbcon = connect_database('maincache_db')
+			dbcon.execute("""DELETE FROM maincache WHERE id=?""", (string,))
+		except:
+			pass
+
+	def clear_mylist_cache(self):
+		for string in ('ad_user_cloud', 'ad_user_history', 'ad_user_links'):
+			self._delete_cache_key(string)
+
+	def user_cloud(self, fresh=False):
 		url = 'magnet/status'
+		if fresh:
+			self._delete_cache_key('ad_user_cloud')
+			return self._get(url) or {'magnets': []}
 		string = 'ad_user_cloud'
 		return cache_object(self._get, string, url, False, 0.03)
 
-	def history(self):
+	def magnets_list(self, fresh=True):
+		if fresh:
+			self._delete_cache_key('ad_user_cloud')
+		result = self._get('magnet/status')
+		if not result or not isinstance(result, dict):
+			return 'Invalid response', []
+		return None, result.get('magnets') or []
+
+	def history(self, fresh=False):
 		url = 'user/history'
-		string = "ad_user_history"
+		if fresh:
+			self._delete_cache_key('ad_user_history')
+			return self._get(url) or {}
+		string = 'ad_user_history'
 		return cache_object(self._get, string, url, False, 0.03)
 
-	def user_links(self):
+	def user_links(self, fresh=False):
 		url = 'user/links'
-		string = "ad_user_links"
+		if fresh:
+			self._delete_cache_key('ad_user_links')
+			return self._get(url) or {}
+		string = 'ad_user_links'
 		return cache_object(self._get, string, url, False, 0.03)
 
 	def unrestrict_link(self, link):
@@ -110,8 +160,15 @@ class AllDebridAPI:
 		url = 'magnet/upload'
 		url_append = '&magnet=%s' % magnet
 		result = self._get(url, url_append)
-		if 'error' in result: return None
-		return result['magnets'][0].get('id', None)
+		if not result or 'error' in result:
+			return 'no_url'
+		try:
+			transfer_id = result['magnets'][0].get('id', None)
+		except (IndexError, KeyError, TypeError):
+			return 'no_url'
+		if not transfer_id:
+			return 'no_url'
+		return transfer_id
 
 	def list_transfer(self, transfer_id):
 		url = 'magnet/status'
@@ -201,10 +258,11 @@ class AllDebridAPI:
 		except: pass
 		return result
 
-	def _post(self, url, data={}):
+	def _post(self, url, data=None):
 		result = None
 		try:
 			if self.token in ('empty_setting', ''): return None
+			if data is None: data = {}
 			url = self.base_url + url + '?agent=%s&apikey=%s' % (self.user_agent, self.token)
 			result = requests.post(url, data=data, timeout=20).json()
 			if result.get('status') == 'success' and 'data' in result: result = result['data']

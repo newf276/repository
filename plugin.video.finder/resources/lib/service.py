@@ -30,6 +30,7 @@ class SetAddonConstants:
 			('finder.addon_fanart', kodi_utils.addon_fanart())
 					]
 		for item in addon_items: kodi_utils.set_property(*item)
+		kodi_utils.clear_property('finder.widgets_refresh_scheduled')
 		return kodi_utils.logger('Finder', 'SetAddonConstants Service Finished')
 
 class DatabaseMaintenance:
@@ -42,8 +43,43 @@ class DatabaseMaintenance:
 class SyncSettings:
 	def run(self):
 		kodi_utils.logger('Finder', 'SyncSettings Service Starting')
-		sync_settings()
+		sync_settings({'load_properties': False})
 		return kodi_utils.logger('Finder', 'SyncSettings Service Finished')
+
+class BootstrapSettings:
+	def run(self):
+		kodi_utils.logger('Finder', 'BootstrapSettings Service Starting')
+		monitor = kodi_utils.kodi_monitor()
+		monitor.waitForAbort(2)
+		if monitor.abortRequested(): return
+		try:
+			from caches.settings_cache import bootstrap_settings_properties, refresh_widgets_after_db_migration
+			bootstrap_settings_properties()
+			refresh_widgets_after_db_migration()
+		except Exception as e:
+			kodi_utils.logger('BootstrapSettings', str(e))
+		return kodi_utils.logger('Finder', 'BootstrapSettings Service Finished')
+
+_custom_windows_thread_started = False
+
+def start_custom_windows_prepare():
+	global _custom_windows_thread_started
+	if _custom_windows_thread_started: return
+	_custom_windows_thread_started = True
+	Thread(target=CustomWindowsPrepare().run, daemon=True).start()
+
+def run_deferred_service_setup():
+	global _custom_windows_thread_started
+	kodi_utils.logger('Finder', 'Deferred Service Setup Starting')
+	try: OnUpdateChanges().run()
+	except Exception as e: kodi_utils.logger('DeferredServiceSetup', 'OnUpdateChanges: %s' % e)
+	try: AddonXMLCheck().run()
+	except Exception as e: kodi_utils.logger('DeferredServiceSetup', 'AddonXMLCheck: %s' % e)
+	try:
+		from windows.base_window import ExtrasUtils
+		ExtrasUtils().run()
+	except Exception as e: kodi_utils.logger('DeferredServiceSetup', 'ExtrasUtils: %s' % e)
+	return kodi_utils.logger('Finder', 'Deferred Service Setup Finished')
 
 class OnUpdateChanges:
 	def run(self):
@@ -56,47 +92,18 @@ class OnUpdateChanges:
 		except: pass
 		return kodi_utils.logger('Finder', 'OnUpdateChanges Service Finished')
 
-	def refresh_addon_keys(self):
-		# For update 2.2.01 - 03
-		from caches.trakt_cache import clear_all_trakt_cache_data
-		from caches.tmdb_lists import tmdb_lists_cache
-		from caches.settings_cache import restore_setting_default
-		show_dialog = False
-		if get_setting('finder.tmdb_api') == 'b370b60447737762ca38457bd77579b3':
-			restore_setting_default({'silent': 'true', 'setting_id': 'tmdb_api'})
-			set_setting('tmdb.token', 'empty_setting')
-			set_setting('tmdb.account_id', 'empty_setting')
-			set_setting('tmdb.username', 'empty_setting')
-			set_setting('tmdb.session_id', 'empty_setting')
-			set_setting('tmdb.account_session_id', 'empty_setting')
-			tmdb_lists_cache.clear_all()
-			show_dialog = True
-		if get_setting('finder.trakt.client') == '1038ef327e86e7f6d39d80d2eb5479bff66dd8394e813c5e0e387af0f84d89fb':
-			restore_setting_default({'silent': 'true', 'setting_id': 'trakt.client'})
-			set_setting('trakt.user', 'empty_setting')
-			set_setting('trakt.expires', '0')
-			set_setting('trakt.token', '0')
-			set_setting('trakt.refresh', '0')
-			set_setting('trakt.next_daily_clear', '0')
-			set_setting('watched_indicators', '0')
-			clear_all_trakt_cache_data(silent=True, refresh=False)
-			show_dialog = True
-		if show_dialog:
-			text = 'The original developer of Finder has revoked all keys (Trakt, TMDb) that have been used up until now '\
-			'within this addon, with permission, due to security concerns.'
-			kodi_utils.ok_dialog(heading='Addon Credentials Reset', text=text)
-			text = 'This unfortunately means you will need to re-authenticate your Trakt & TMDb accounts through Finder AM  if you are currently using them. ' \
-			'My apologies, but with the previous keys being revoked, this is necessary.'
-			kodi_utils.ok_dialog(heading='Addon Credentials Reset', text=text)
+	def fix_media_github_username(self):
+		stored = get_setting('finder.update.username', '')
+		if stored.replace('-', '').lower() == 'newf276' and stored != 'newf276':
+			set_setting('update.username', 'newf276')
 
 class CustomWindowsPrepare:
 	def run(self):
 		kodi_utils.logger('Finder', 'CustomWindowsPrepare Service Starting')
-		from windows.base_window import FontUtils, ExtrasUtils
+		from windows.base_window import FontUtils
 		monitor, player = kodi_utils.kodi_monitor(), kodi_utils.kodi_player()
 		wait_for_abort, is_playing = monitor.waitForAbort, player.isPlayingVideo
 		kodi_utils.clear_property(current_skin_prop)
-		ExtrasUtils().run()
 		font_utils = FontUtils()
 		while not monitor.abortRequested():
 			font_utils.execute_custom_fonts()
@@ -114,6 +121,7 @@ class TraktMonitor:
 		from modules.settings import trakt_user_active, trakt_sync_interval
 		monitor, player = kodi_utils.kodi_monitor(), kodi_utils.kodi_player()
 		wait_for_abort, is_playing = monitor.waitForAbort, player.isPlayingVideo
+		wait_for_abort(45)
 		while not monitor.abortRequested():
 			while is_playing() or kodi_utils.get_property(pause_services_prop) == 'true': wait_for_abort(10)
 			wait_time = 1800
@@ -221,7 +229,7 @@ class AddonXMLCheck:
 		self.root = mdParse(self.addon_xml)
 		self.change_list = []
 		self.check_property('reuse_language_invoker', 'reuselanguageinvoker')
-		self.check_property('addon_icon_choice', 'icon')
+
 		self.change_xml_file()
 		return kodi_utils.logger('Finder', 'AddonXMLCheck Service Finished')
 
@@ -247,7 +255,7 @@ class AddonXMLCheck:
 
 	def reassign_addon_icon(self):
 		from indexers.dialogs import addon_icon_choice
-		addon_icon_choice({'set_icon': get_setting('addon_icon_choice_name', 'finder_icon_01.png')})
+		addon_icon_choice({'set_icon': get_setting('addon_icon_choice_name', 'icon.png')})
 
 class FinderMonitor(Monitor):
 	def __init__ (self):
@@ -256,21 +264,18 @@ class FinderMonitor(Monitor):
 
 	def startServices(self):
 		try: SetAddonConstants().run()
-		except Exception as e: logger('SetAddonConstants', str(e))
+		except Exception as e: kodi_utils.logger('SetAddonConstants', str(e))
 		try: DatabaseMaintenance().run()
-		except Exception as e: logger('DatabaseMaintenance', str(e))
+		except Exception as e: kodi_utils.logger('DatabaseMaintenance', str(e))
 		try: SyncSettings().run()
-		except Exception as e: logger('SyncSettings', str(e))
-		try: OnUpdateChanges().run()
-		except Exception as e: logger('OnUpdateChanges', str(e))
-		try: AddonXMLCheck().run()
-		except Exception as e: logger('AddonXMLCheck', str(e))
-		Thread(target=CustomWindowsPrepare().run).start()
+		except Exception as e: kodi_utils.logger('SyncSettings', str(e))
+		Thread(target=BootstrapSettings().run).start()
+		start_custom_windows_prepare()
 		Thread(target=TraktMonitor().run).start()
 		Thread(target=UpdateCheck().run).start()
 		Thread(target=WidgetRefresher().run).start()
 		try: AutoStart().run()
-		except Exception as e: logger('AutoStart', str(e))
+		except Exception as e: kodi_utils.logger('AutoStart', str(e))
 
 	def onNotification(self, sender, method, data):
 		if method in ('GUI.OnScreensaverActivated', 'System.OnSleep'):
@@ -280,6 +285,40 @@ class FinderMonitor(Monitor):
 			kodi_utils.clear_property(pause_services_prop)
 			kodi_utils.logger('OnNotificationActions', 'UNPAUSING Finder Services Due to Device Awake')
 
-kodi_utils.logger('Finder', 'Main Monitor Service Starting')
-FinderMonitor().waitForAbort()
-kodi_utils.logger('Finder', 'Main Monitor Service Finished')
+if __name__ == '__main__':
+	# ----- AM Lite Trakt startup sync patch BEGIN -----
+	def wait_for_am_trakt(timeout=120, max_age=180):
+		import time
+		import xbmc
+		import xbmcaddon
+
+		if not xbmc.getCondVisibility('System.HasAddon(script.module.acctmgr)'):
+			return False
+
+		waited = 0
+		while waited < timeout:
+			try:
+				am = xbmcaddon.Addon('script.module.acctmgr')
+				ready = am.getSetting('am_trakt_ready')
+				last_prepare = am.getSetting('am_last_prepare')
+				if ready == 'true' and last_prepare:
+					age = int(time.time()) - int(last_prepare)
+					if 0 <= age <= max_age:
+						return True
+			except Exception:
+				pass
+			xbmc.sleep(1000)
+			waited += 1
+		return False
+
+	def _am_trakt_startup():
+		try:
+			wait_for_am_trakt()
+		except Exception:
+			pass
+
+	Thread(target=_am_trakt_startup, daemon=True).start()
+	# ----- AM Lite Trakt startup sync patch END -----
+	kodi_utils.logger('Finder', 'Main Monitor Service Starting')
+	FinderMonitor().waitForAbort()
+	kodi_utils.logger('Finder', 'Main Monitor Service Finished')

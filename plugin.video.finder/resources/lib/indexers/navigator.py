@@ -33,10 +33,8 @@ class Navigator:
 					('[B]Reload Menu[/B]', self.run_plugin % self.build_url({'mode': 'menu_editor.reload', 'active_list': self.list_name, 'position': count})),
 					('[B]Browse Removed items[/B]', self.run_plugin % self.build_url({'mode': 'menu_editor.browse', 'active_list': self.list_name, 'position': count})),
 					('[B]Add to Shortcut Folder[/B]', self.run_plugin % self.build_url({'mode': 'menu_editor.shortcut_folder_add_known', 'url': url}))]
-					icon = item.get('iconImage', '')
-					if not icon.startswith('http'):
-						icon = self.get_icon(icon)
-						item['iconImage'] = icon
+					icon = k.resolve_list_icon(item.get('iconImage', ''))
+					item['iconImage'] = icon
 					listitem = self.make_listitem()
 					listitem.setLabel(item.get('name', ''))
 					listitem.setArt({'icon': icon, 'poster': icon, 'thumb': icon, 'fanart': self.fanart, 'banner': icon, 'landscape': icon})
@@ -57,11 +55,12 @@ class Navigator:
 		self.end_directory()
 
 	def premium(self):
-		if s.authorized_debrid_check('rd'): self.add({'mode': 'navigator.real_debrid'}, 'Real Debrid', 'realdebrid')
-		if s.authorized_debrid_check('pm'): self.add({'mode': 'navigator.premiumize'}, 'Premiumize', 'premiumize')
 		if s.authorized_debrid_check('ad'): self.add({'mode': 'navigator.alldebrid'}, 'All Debrid', 'alldebrid')
+		if s.easynews_authorized(): self.add({'mode': 'navigator.easynews'}, 'EasyNews', 'easynews')
+		if s.authorized_debrid_check('oc'): self.add({'mode': 'navigator.offcloud'}, 'Offcloud', 'offcloud')
+		if s.authorized_debrid_check('pm'): self.add({'mode': 'navigator.premiumize'}, 'Premiumize', 'premiumize')
+		if s.authorized_debrid_check('rd'): self.add({'mode': 'navigator.real_debrid'}, 'Real Debrid', 'realdebrid')
 		if s.authorized_debrid_check('tb'): self.add({'mode': 'navigator.torbox'}, 'TorBox', 'torbox')
-		if s.easynews_authorized(): self.add({'mode': 'navigator.easynews'}, 'Easynews', 'easynews')
 		self.end_directory()
 
 	def easynews(self):
@@ -89,8 +88,16 @@ class Navigator:
 		self.add({'mode': 'alldebrid.ad_account_info', 'isFolder': 'false'}, 'Account Info', 'alldebrid')
 		self.end_directory()
 
+	def offcloud(self):
+		self.add({'mode': 'offcloud.oc_cloud'}, 'Cloud Storage', 'offcloud')
+		self.add({'mode': 'offcloud.oc_history'}, 'History', 'offcloud')
+		self.add({'mode': 'offcloud.oc_account_info', 'isFolder': 'false'}, 'Account Info', 'offcloud')
+		self.end_directory()
+
 	def torbox(self):
 		self.add({'mode': 'torbox.tb_cloud'}, 'Cloud Storage', 'torbox')
+		self.add({'mode': 'torbox.tb_history'}, 'History', 'torbox')
+		self.add({'mode': 'torbox.send_webdl', 'isFolder': 'false'}, 'Send URL to WebDL', 'torbox')
 		self.add({'mode': 'torbox.tb_account_info', 'isFolder': 'false'}, 'Account Info', 'torbox')
 		self.end_directory()
 
@@ -211,8 +218,8 @@ class Navigator:
 		self.add({'mode': 'navigator.search_history', 'action': 'tmdb_keyword_tvshow', 'name': 'Search History Keywords (TV Shows)'}, 'Search Keywords (TV Shows)', 'tmdb')
 		self.add({'mode': 'navigator.search_history', 'action': 'trakt_lists'}, 'Search Trakt User Lists', 'trakt')
 		if s.easynews_authorized():
-			self.add({'mode': 'navigator.search_history', 'action': 'easynews_video'}, 'Search Easynews Videos', 'easynews')
-			self.add({'mode': 'navigator.search_history', 'action': 'easynews_image'}, 'Search Easynews Images', 'easynews')
+			self.add({'mode': 'navigator.search_history', 'action': 'easynews_video'}, 'Search EasyNews Videos', 'easynews')
+			self.add({'mode': 'navigator.search_history', 'action': 'easynews_image'}, 'Search EasyNews Images', 'easynews')
 		self.end_directory()
 
 	def downloads(self):
@@ -233,9 +240,14 @@ class Navigator:
 		self.add({'mode': 'navigator.changelog_utils'}, 'Changelog & Log Utils', 'settings2')
 		self.add({'mode': 'build_next_episode_manager'}, 'TV Shows Progress Manager', 'settings2')
 		self.add({'mode': 'navigator.shortcut_folders'}, 'Shortcut Folders Manager', 'settings2')
+		self.add({'mode': 'navigator.import_export'}, 'Import & Export', 'settings2')
 		self.add({'mode': 'navigator.maintenance'}, 'Database & Cache Maintenance', 'settings2')
-		self.add({'mode': 'navigator.update_utils'}, 'Update Utilities', 'settings2')
 		self.add({'mode': 'language_invoker_choice', 'isFolder': 'false'}, 'Toggle Language Invoker (ADVANCED!!)', 'settings2')
+		self.end_directory()
+
+	def import_export(self):
+		self.add({'mode': 'local_backup.import_data', 'isFolder': 'false'}, 'Import Finder Favorites & Progress', 'settings')
+		self.add({'mode': 'local_backup.export_data', 'isFolder': 'false'}, 'Export Finder Favorites & Progress', 'settings')
 		self.end_directory()
 
 	def maintenance(self):
@@ -253,11 +265,13 @@ class Navigator:
 		self.add({'mode': 'clear_cache', 'cache': 'trakt', 'isFolder': 'false'}, 'Clear Trakt Cache', 'settings')
 		self.add({'mode': 'clear_cache', 'cache': 'imdb', 'isFolder': 'false'}, 'Clear IMDb Cache', 'settings')
 		self.add({'mode': 'clear_cache', 'cache': 'internal_scrapers', 'isFolder': 'false'}, 'Clear Internal Scrapers Cache', 'settings')
+		self.add({'mode': 'clear_cache', 'cache': 'easynews_scrape', 'isFolder': 'false'}, 'Clear EasyNews Scrape Cache', 'settings')
+		self.add({'mode': 'search.clear_easynews_search_history', 'isFolder': 'false'}, 'Clear EasyNews Search History', 'settings')
 		self.add({'mode': 'clear_cache', 'cache': 'external_scrapers', 'isFolder': 'false'}, 'Clear External Scrapers Cache', 'settings')
 		self.add({'mode': 'clear_cache', 'cache': 'rd_cloud', 'isFolder': 'false'}, 'Clear Real Debrid Cache', 'settings')
 		self.add({'mode': 'clear_cache', 'cache': 'pm_cloud', 'isFolder': 'false'}, 'Clear Premiumize Cache', 'settings')
 		self.add({'mode': 'clear_cache', 'cache': 'ad_cloud', 'isFolder': 'false'}, 'Clear All Debrid Cache', 'settings')
-		self.add({'mode': 'clear_cache', 'cache': 'ed_cloud', 'isFolder': 'false'}, 'Clear Easy Debrid Cache', 'settings')
+		self.add({'mode': 'clear_cache', 'cache': 'oc_cloud', 'isFolder': 'false'}, 'Clear Offcloud Cache', 'settings')
 		self.add({'mode': 'clear_cache', 'cache': 'tb_cloud', 'isFolder': 'false'}, 'Clear TorBox Cache', 'settings')
 		self.end_directory()
 
@@ -443,7 +457,7 @@ class Navigator:
 		if folders:
 			for i in folders:
 				name = i[0]
-				convert_sr = '[B]Remove Random[/B]' if '[COLOR red][RANDOM][/COLOR]' in name else '[B]Make Random[/B]'
+				convert_sr = '[B]Remove Random[/B]' if '[COLOR dodgerblue][RANDOM][/COLOR]' in name else '[B]Make Random[/B]'
 				cm_items = [('[B]Rename[/B]', self.run_plugin % self.build_url({'mode': 'menu_editor.shortcut_folder_rename'})),
 							('[B]Delete Folder[/B]' , self.run_plugin % self.build_url({'mode': 'menu_editor.shortcut_folder_delete'})),
 							('[B]Make New Folder[/B]' , self.run_plugin % self.build_url({'mode': 'menu_editor.shortcut_folder_make'})),
@@ -455,20 +469,21 @@ class Navigator:
 
 	def build_shortcut_folder_contents(self):
 		list_name = self.params_get('name')
-		is_random = '[COLOR red][RANDOM][/COLOR]' in list_name
+		is_random = '[COLOR dodgerblue][RANDOM][/COLOR]' in list_name
 		contents = nc.get_shortcut_folder_contents(list_name)
 		folder_icon = self.get_icon('folder')
 		if is_random:
 			from indexers.random_lists import random_shortcut_folders
-			return random_shortcut_folders(list_name.replace(' [COLOR red][RANDOM][/COLOR]', ''), contents)
+			return random_shortcut_folders(list_name.replace(' [COLOR dodgerblue][RANDOM][/COLOR]', ''), contents)
 		if contents:
 			for count, item in enumerate(contents):
 				item_get = item.get
 				iconImage = item_get('iconImage', None)
-				icon = iconImage
 				if iconImage:
-					if iconImage.startswith('http') or 'plugin.video.finder' in iconImage: original_image = True
-					else: original_image = False
+					if iconImage.startswith('http') and 'raw.githubusercontent.com' not in iconImage:
+						icon, original_image = iconImage, True
+					else:
+						icon, original_image = k.resolve_list_icon(iconImage), False
 				else: icon, original_image = folder_icon, False
 				cm_items = [
 				('[B]Move[/B]', self.run_plugin % self.build_url({'mode': 'menu_editor.shortcut_folder_edit', 'active_list': list_name, 'position': count, 'action': 'move'})),
@@ -571,7 +586,7 @@ class Navigator:
 		isFolder = url_params.get('isFolder', 'true') == 'true'
 		try:
 			if original_image: icon = iconImage
-			else: icon = self.get_icon(iconImage)
+			else: icon = k.resolve_list_icon(iconImage)
 		except: pass
 		url_params['iconImage'] = icon
 		url = self.build_url(url_params)

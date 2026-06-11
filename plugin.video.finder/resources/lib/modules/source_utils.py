@@ -134,6 +134,69 @@ def seas_ep_filter(season, episode, release_title, split=False, return_match=Fal
 	if return_match: return re.search(reg_pattern, release_title).group()
 	return bool(re.search(reg_pattern, release_title))
 
+def seas_ep_filter_exact(season, episode, release_title):
+	"""Exact S/E only — for debrid cloud files (no multi-episode pack ranges)."""
+	str_season, str_episode = str(season), str(episode)
+	season_fill, episode_fill = str_season.zfill(2), str_episode.zfill(2)
+	release_title = re.sub(r'[^A-Za-z0-9-]+', '.', unquote(release_title).replace('\'', '')).lower()
+	patterns = (
+		r'(s<<S>>[.-]?e[p]?[.-]?<<E>>[.-])',
+		r'(season[.-]?<<S>>[.-]?episode[.-]?<<E>>[.-])',
+		r'([.-]<<S>>[.-]?<<E>>[.-])',
+		r'(episode[.-]?<<E>>[.-])',
+		r'([.-]e[p]?[.-]?<<E>>[.-])',
+		r'([s]?<<S>>x<<E>>[.-])',
+	)
+	string_list = []
+	for pattern in patterns:
+		for s, e in ((season_fill, episode_fill), (str_season, episode_fill), (season_fill, str_episode), (str_season, str_episode)):
+			string_list.append(pattern.replace('<<S>>', s).replace('<<E>>', e))
+	return bool(re.search('|'.join(string_list), release_title))
+
+def parse_episode_from_filename(release_title, season=None):
+	"""Parse SxxExx / 1x## from a filename; ignore season/episode folder path words."""
+	release_title = re.sub(r'[^A-Za-z0-9-]+', '.', unquote(release_title).replace('\'', '')).lower()
+	season_patterns = []
+	if season is not None:
+		sf, ss = str(season).zfill(2), str(season)
+		season_patterns = [sf, ss]
+	for pattern in (
+		r's(\d{1,2})[.-]?e[p]?[.-]?(\d{1,3})',
+		r'(\d{1,2})x(\d{1,3})',
+	):
+		for match in re.finditer(pattern, release_title):
+			try:
+				s_num, e_num = int(match.group(1)), int(match.group(2))
+			except Exception:
+				continue
+			if season_patterns and str(s_num) not in season_patterns and str(s_num).zfill(2) not in season_patterns:
+				continue
+			return e_num
+	return None
+
+def cloud_episode_matches(season, episode, filename):
+	"""Match requested episode using the file name only — not parent folder names like Episode 1/."""
+	str_season, str_episode = str(season), str(episode)
+	season_fill, episode_fill = str_season.zfill(2), str_episode.zfill(2)
+	filename = re.sub(r'[^A-Za-z0-9-]+', '.', unquote(filename).replace('\'', '')).lower()
+	if not filename:
+		return False
+	sxxexx_patterns = (
+		r'(s<<S>>[.-]?e[p]?[.-]?<<E>>[.-])',
+		r'([s]?<<S>>x<<E>>[.-])',
+		r'(\d{1,2}x<<E>>[.-])',
+	)
+	string_list = []
+	for pattern in sxxexx_patterns:
+		for s, e in ((season_fill, episode_fill), (str_season, episode_fill), (season_fill, str_episode), (str_season, str_episode)):
+			string_list.append(pattern.replace('<<S>>', s).replace('<<E>>', e))
+	if not re.search('|'.join(string_list), filename):
+		return False
+	parsed_ep = parse_episode_from_filename(filename, season)
+	if parsed_ep is not None:
+		return int(parsed_ep) == int(episode)
+	return True
+
 def find_season_in_release_title(release_title):
 	release_title = re.sub(r'[^A-Za-z0-9-]+', '.', unquote(release_title).replace('\'', '')).lower()
 	match = None
@@ -177,8 +240,10 @@ def check_title(title, release_title, aliases, year, season, episode):
 		if hdlr:
 			release_title = release_title.split(hdlr.lower())[0]
 			release_title = release_title.replace(year, '').replace('(', '').replace(')', '').replace('&', 'and').rstrip('.-').rstrip('.').rstrip('-').replace(':', '')
-			if not any(item in release_title for item in cleaned_titles): return False
-			# if not any(release_title == i for i in cleaned_titles): return False
+			# Episodes: exact show title before SxxExx (Wings must not match Behind The Wings / Super Wings).
+			if season and season != 'pack':
+				if not any(release_title == i for i in cleaned_titles): return False
+			elif not any(item in release_title for item in cleaned_titles): return False
 		else:
 			release_title = release_title.replace(year, '').replace('(', '').replace(')', '').replace('&', 'and').rstrip('.-').rstrip('.').rstrip('-').replace(':', '')
 			if not any(i in release_title for i in cleaned_titles): return False

@@ -2,7 +2,8 @@
 import json
 from windows.base_window import BaseDialog
 from caches.settings_cache import set_setting
-from modules.debrid import debrid_for_ext_cache_check
+from modules.debrid import debrid_cache_check_available
+from modules.settings import debrid_cache_check
 from modules.utils import TaskPool
 from modules.source_utils import source_filters
 from modules.settings import provider_sort_ranks, avoid_episode_spoilers, max_threads
@@ -20,23 +21,39 @@ class SourcesResults(BaseDialog):
 		self.info_highlights_dict = kwargs.get('scraper_settings')
 		self.episode_group_label = kwargs.get('episode_group_label', '')
 		self.prescrape = kwargs.get('prescrape')
+		self.prescrape_empty_notice = kwargs.get('prescrape_empty_notice', False)
+		self.prescrape_empty_notice_main = kwargs.get('prescrape_empty_notice_main', '')
+		self.prescrape_empty_notice_sub = kwargs.get('prescrape_empty_notice_sub', '')
 		self.meta = kwargs.get('meta')
+		self.sources_ref = kwargs.get('sources_ref')
 		self.filters_ignored = kwargs.get('filters_ignored', False)
 		self.meta_get = self.meta.get
 		self.make_poster = self.window_format in ('list', 'medialist')
 		self.empty_poster = get_icon('box_office')
 		self.addon_fanart = addon_fanart()
 		self.poster = self.meta_get('poster') or self.empty_poster
-		self.external_cache_check = kwargs.get('external_cache_check')
+		self.cache_check_override = kwargs.get('cache_check_override')
 		self.prerelease_values, self.prerelease_key = ('CAM', 'SCR', 'TELE'), 'CAM/SCR/TELE'
-		self.info_icons_dict = {'easynews': get_icon('easynews'), 'alldebrid': get_icon('alldebrid'), 'real-debrid': get_icon('realdebrid'),
-		'premiumize': get_icon('premiumize'), 'torbox': get_icon('torbox'), 'ad_cloud': get_icon('alldebrid'), 'rd_cloud': get_icon('realdebrid'),
-		'pm_cloud': get_icon('premiumize'), 'tb_cloud': get_icon('torbox')}
+		self.item_list, self.filter_list, self.total_results = [], [], '0'
+		self.info_icons_dict = {'easynews': get_icon('easynews'), 'aiostreams': get_icon('premiumize'), 'alldebrid': get_icon('alldebrid'), 'real-debrid': get_icon('realdebrid'),
+		'premiumize': get_icon('premiumize'), 'offcloud': get_icon('offcloud'), 'torbox': get_icon('torbox'), 'ad_cloud': get_icon('alldebrid'), 'rd_cloud': get_icon('realdebrid'),
+		'pm_cloud': get_icon('premiumize'), 'oc_cloud': get_icon('offcloud'), 'tb_cloud': get_icon('torbox')}
 		self.info_quality_dict = {'4k': get_icon('flag_4k', 'flags'), '1080p': get_icon('flag_1080p', 'flags'), '720p': get_icon('flag_720p', 'flags'),
 		'sd': get_icon('flag_sd', 'flags'), 'cam': get_icon('flag_sd', 'flags'), 'tele': get_icon('flag_sd', 'flags'), 'scr': get_icon('flag_sd', 'flags')}
 		self.make_items()
 		self.make_filter_items()
 		self.set_properties()
+
+	def _any_cache_check_active(self):
+		if self.cache_check_override is not None:
+			return self.cache_check_override
+		from modules.settings import any_external_cache_check
+		return any_external_cache_check()
+
+	def _provider_cache_verified(self, provider):
+		if self.cache_check_override is not None:
+			return self.cache_check_override
+		return debrid_cache_check(provider)
 
 	def onInit(self):
 		self.filter_applied = False
@@ -88,7 +105,7 @@ class SourcesResults(BaseDialog):
 					filtered_list = [i for i in self.item_list if all(x in i.getProperty('extraInfo') for x in choice)]
 				elif filter_value == 'showuncached': filtered_list = self.make_items(self.uncached_results)
 				else: #cache_check_rescrape
-					self.selected = ('cache_change_rescrape', 'false' if self.external_cache_check else 'true')
+					self.selected = ('cache_change_rescrape', 'false' if self._any_cache_check_active() else 'true')
 					return self.close()
 			if not filtered_list: return ok_dialog(text='No Results')
 			self.set_filter(filtered_list)
@@ -109,14 +126,28 @@ class SourcesResults(BaseDialog):
 			chosen_source = json.loads(chosen_listitem.getProperty('source'))
 			if 'Uncached' in chosen_source.get('cache_provider', ''):
 				from modules.debrid import manual_add_magnet_to_cloud
-				return manual_add_magnet_to_cloud({'mode': 'manual_add_magnet_to_cloud', 'provider': chosen_source['debrid'], 'magnet_url': chosen_source['url']})
+				return manual_add_magnet_to_cloud({
+					'mode': 'manual_add_magnet_to_cloud',
+					'provider': chosen_source['debrid'],
+					'magnet_url': chosen_source['url'],
+					'display_name': chosen_source.get('display_name', ''),
+				})
+			try:
+				if self.sources_ref:
+					self.sources_ref._prepare_resolve_ui()
+			except:
+				pass
 			self.selected = ('play', chosen_source)
 			return self.close()
 		elif action in self.context_actions:
 			source = json.loads(chosen_listitem.getProperty('source'))
 			choice = self.context_menu(source)
 			if choice:
-				if isinstance(choice, dict): return self.execute_code('RunPlugin(%s)' % self.build_url(choice))
+				if isinstance(choice, dict):
+					if choice.get('mode') == 'debrid.browse_packs':
+						self.selected = ('browse_pack', choice)
+						return self.close()
+					return self.execute_code('RunPlugin(%s)' % self.build_url(choice))
 				if choice == 'results_info': return self.open_window(('windows.sources', 'SourcesInfo'), 'sources_info.xml', item=chosen_listitem)
 				if choice == 'rd_cloud_delete':
 					from apis.real_debrid_api import RealDebridAPI
@@ -160,9 +191,10 @@ class SourcesResults(BaseDialog):
 						else: set_properties({'source_type': 'UNCACHED'})
 						set_properties({'highlight': 'FF7C7C7C'})
 					else:
-						if provider in ('REAL-DEBRID', 'ALLDEBRID'):
-							if self.external_cache_check: cache_flag = '[B]CACHED[/B]'
-							else: cache_flag = 'UNCHECKED'
+						provider_check_names = {'REAL-DEBRID': 'Real-Debrid', 'ALLDEBRID': 'AllDebrid', 'TORBOX': 'TorBox', 'PREMIUMIZE': 'Premiumize.me', 'OFFCLOUD': 'Offcloud'}
+						check_provider = provider_check_names.get(provider)
+						if check_provider and self._provider_cache_verified(check_provider): cache_flag = '[B]CACHED[/B]'
+						elif check_provider: cache_flag = 'UNCHECKED'
 						else: cache_flag = '[B]CACHED[/B]'
 						if highlight_type == 0: key = provider_lower
 						else: key = basic_quality
@@ -193,12 +225,14 @@ class SourcesResults(BaseDialog):
 			[i.join() for i in threads]
 			item_list.sort(key=lambda k: k[1])
 			self.item_list = [i[0] for i in item_list]
+			self.total_results = str(len(self.item_list))
 			if self.prescrape:
 				prescrape_listitem = self.make_listitem()
 				prescrape_listitem.setProperty('perform_full_search', 'true')
-			self.total_results = str(len(self.item_list))
-			if self.prescrape: self.item_list.append(prescrape_listitem)
-		except: pass
+				self.item_list.append(prescrape_listitem)
+		except:
+			self.item_list = []
+			self.total_results = '0'
 
 	def make_filter_items(self):
 		def builder(count, item):
@@ -219,7 +253,7 @@ class SourcesResults(BaseDialog):
 							and not i.getProperty('provider') == '']
 		provider_totals = {i: len([x for x in self.item_list if x.getProperty('provider') == i]) for i in providers}
 		sort_ranks = provider_sort_ranks()
-		cache_functions_debrid = debrid_for_ext_cache_check()
+		cache_functions_debrid = debrid_cache_check_available()
 		sort_ranks['premiumize'] = sort_ranks.pop('premiumize.me')
 		provider_choices = sorted(sort_ranks.keys(), key=sort_ranks.get)
 		provider_choices = [i.upper() for i in provider_choices]
@@ -227,7 +261,7 @@ class SourcesResults(BaseDialog):
 		qualities = [('Show [B]%s[/B] Only | [B]%d[/B] Results' % (i, quality_totals[i]), 'quality', i) for i in qualities]
 		providers = [('Show [B]%s[/B] Only | [B]%d[/B] Results' % (i, provider_totals[i]), 'provider', i) for i in providers]
 		data = []
-		if cache_functions_debrid: data.append(('Rescrape with External Cache Check [B]%s[/B]' % ('OFF' if self.external_cache_check else 'ON'), 'special', 'cache_check_rescrape'))
+		if cache_functions_debrid: data.append(('Rescrape with External Cache Check [B]%s[/B]' % ('OFF' if self._any_cache_check_active() else 'ON'), 'special', 'cache_check_rescrape'))
 		if self.uncached_results: data.append(('Show [B]Uncached[/B] Only | [B]%d[/B] Results' % len(self.uncached_results), 'special', 'showuncached'))
 		data.extend(qualities)
 		data.extend(providers)
@@ -246,6 +280,9 @@ class SourcesResults(BaseDialog):
 		self.setProperty('title', self.meta_get('title'))
 		self.setProperty('total_results', self.total_results)
 		self.setProperty('filters_ignored', '| Filters Ignored' if self.filters_ignored else '')
+		if self.prescrape_empty_notice:
+			self.setProperty('prescrape_empty_notice', self.prescrape_empty_notice_main)
+			self.setProperty('prescrape_empty_notice_sub', self.prescrape_empty_notice_sub)
 
 	def set_poster(self):
 		if self.window_id == 2000: self.set_image(200, self.poster)
@@ -263,12 +300,19 @@ class SourcesResults(BaseDialog):
 			down_file_params = {'mode': 'downloader.runner', 'action': 'meta.single', 'name': self.meta.get('rootname', ''), 'source': source,
 								'url': None, 'provider': scrape_provider, 'meta': meta_json}
 		if 'package' in item and not uncached:
+			pack_provider = item_get('debrid') or cache_provider
 			down_pack_params = {'mode': 'downloader.runner', 'action': 'meta.pack', 'name': self.meta.get('rootname', ''), 'source': source, 'url': None,
-								'provider': cache_provider, 'meta': meta_json, 'magnet_url': magnet_url, 'info_hash': info_hash}
+								'provider': pack_provider, 'meta': meta_json, 'magnet_url': magnet_url, 'info_hash': info_hash}
+			if provider_source == 'torrent':
+				browse_pack_params = {'mode': 'debrid.browse_packs', 'provider': item_get('debrid') or cache_provider, 'name': name,
+									'magnet_url': magnet_url, 'info_hash': info_hash, 'source_item': item}
 		if provider_source == 'torrent':
-			browse_pack_params = {'mode': 'debrid.browse_packs', 'provider': cache_provider, 'name': name,
-								'magnet_url': magnet_url, 'info_hash': info_hash}
-			add_magnet_to_cloud_params = {'mode': 'manual_add_magnet_to_cloud', 'provider': cache_provider, 'magnet_url': magnet_url}
+			add_magnet_to_cloud_params = {
+				'mode': 'manual_add_magnet_to_cloud',
+				'provider': cache_provider,
+				'magnet_url': magnet_url,
+				'display_name': item_get('display_name', ''),
+			}
 		choices_append(('Info', 'results_info'))
 		if add_magnet_to_cloud_params: choices_append(('Add to Cloud', add_magnet_to_cloud_params))
 		if browse_pack_params: choices_append(('Browse', browse_pack_params))
@@ -303,6 +347,7 @@ class SourcesPlayback(BaseDialog):
 	def __init__(self, *args, **kwargs):
 		BaseDialog.__init__(self, *args)
 		self.meta = kwargs.get('meta')
+		self.sources_ref = kwargs.get('sources_ref')
 		self.is_canceled, self.skip_resolve, self.resume_choice = False, False, None
 		self.meta_get = self.meta.get
 		self.addon_fanart = addon_fanart()
@@ -317,7 +362,24 @@ class SourcesPlayback(BaseDialog):
 		self.resume_choice = {10: 'resume', 11: 'start_over', 12: 'cancel'}[controlID]
 
 	def onAction(self, action):
-		if action in self.closing_actions: self.is_canceled = True
+		if action in self.closing_actions:
+			self.is_canceled = True
+			defer_close = False
+			try:
+				if self.sources_ref:
+					if self.window_mode == 'resume':
+						self.resume_choice = 'cancel'
+						self.sources_ref._on_resolve_dialog_cancel()
+						defer_close = True
+					elif self.window_mode == 'resolver':
+						self.sources_ref._on_resolve_dialog_cancel()
+						defer_close = True
+					elif self.window_mode == 'scraper':
+						self.sources_ref._on_scrape_dialog_cancel()
+			except:
+				pass
+			if not defer_close:
+				self.close()
 		elif action == self.right_action and self.window_mode == 'resolver': self.skip_resolve = True
 
 	def iscanceled(self):
@@ -337,6 +399,7 @@ class SourcesPlayback(BaseDialog):
 
 	def enable_resolver(self):
 		self.window_mode = 'resolver'
+		self.setProperty('percent', '0')
 		self.set_resolver_properties()
 
 	def enable_resume(self, percent):
@@ -345,6 +408,8 @@ class SourcesPlayback(BaseDialog):
 
 	def busy_spinner(self, toggle='true'):
 		self.setProperty('enable_busy_spinner', toggle)
+		if toggle == 'false':
+			self.setProperty('percent', '0')
 
 	def set_scraper_properties(self):
 		title, genre = self.meta_get('title'), self.meta_get('genre', '')

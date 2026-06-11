@@ -9,7 +9,7 @@ from modules import kodi_utils
 logger = kodi_utils.logger
 
 def get_location(insert=''):
-	return 'https://github.com/%s/%s/raw/master/packages/%s' % (get_setting('finder.update.username'), get_setting('update.location'), insert)
+	return 'https://github.com/%s/%s/raw/master/packages/%s' % (get_setting('finder.update.username'), get_setting('finder.update.location'), insert)
 
 def get_versions():
 	try:
@@ -37,7 +37,7 @@ def get_changes(online_version=None):
 		return kodi_utils.notification('Error', icon=kodi_utils.get_icon('downloads'))
 
 def version_check(current_version, online_version):
-	return string_alphanum_to_num(current_version) != string_alphanum_to_num(online_version)
+        return False
 
 def update_check(action=4):
 	if action == 3: return
@@ -61,7 +61,7 @@ def update_check(action=4):
 
 def rollback_check():
 	current_version = get_versions()[0]
-	url = 'https://api.github.com/repos/%s/%s/contents/packages' % (get_setting('update.username'), get_setting('update.location'))
+	url = 'https://api.github.com/repos/%s/%s/contents/packages' % (get_setting('finder.update.username'), get_setting('finder.update.location'))
 	kodi_utils.show_busy_dialog()
 	results = requests.get(url)
 	kodi_utils.hide_busy_dialog()

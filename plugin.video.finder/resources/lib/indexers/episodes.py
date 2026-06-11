@@ -34,7 +34,7 @@ def build_episode_list(params):
 					duration = show_duration
 					item['duration'] = duration
 				if not episode_date or current_date < episode_date:
-					display, unaired = '[COLOR red][I]%s[/I][/COLOR]' % ep_name, True
+					display, unaired = '[COLOR dodgerblue][I]%s[/I][/COLOR]' % ep_name, True
 					item['title'] = display
 				else: display, unaired = ep_name, False
 				extras_params = build_url({'mode': 'extras_menu_choice', 'tmdb_id': tmdb_id, 'media_type': 'episode', 'is_external': is_external})
@@ -214,7 +214,7 @@ def build_single_episode(list_type, params={}):
 					else: display_premiered = '[UNKNOWN] '
 				else: display_premiered = ''
 				if unwatched: highlight_start, highlight_end = '[COLOR darkgoldenrod]', '[/COLOR]'
-				elif unaired: highlight_start, highlight_end = '[COLOR red]', '[/COLOR]'
+				elif unaired: highlight_start, highlight_end = '[COLOR dodgerblue]', '[/COLOR]'
 				else: highlight_start, highlight_end = '', ''
 				display = '%s%s%s%s%s%s' % (display_premiered, title_str, highlight_start, seas_ep, ep_name, highlight_end)
 			elif list_type_compare == 'trakt_calendar':

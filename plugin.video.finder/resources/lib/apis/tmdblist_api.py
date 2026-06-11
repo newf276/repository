@@ -2,7 +2,7 @@
 from modules.kodi_utils import progress_dialog, notification, sleep, make_session
 from caches.tmdb_lists import tmdb_lists_cache_object, tmdb_lists_cache
 from caches.settings_cache import get_setting, set_setting
-from modules.settings import max_threads
+from modules.settings import max_threads, tmdb_lists_read_token
 from modules.utils import copy2clip, make_qrcode, make_tinyurl, TaskPool
 # from modules.kodi_utils import logger
 
@@ -12,12 +12,16 @@ class TMDbListAPI:
 	def __init__(self):
 		self.base_url = 'https://api.themoviedb.org/4'
 		self.base_url_v3 = 'https://api.themoviedb.org/3'
-		self.read_access_token = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiMTRjMjY1NmY3MmU1YmFiMjMzZGVmMzY5MjhhMjAyYiIsIm5iZiI6MTc3NzU3Mzk1Mi41MjMsInN1YiI6IjY5ZjNhMDQwZTUzODE2ODAwY2Y3ZGN' \
-									'mNSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.M7UJoYomkjrlJ4m1jJ7zBUAALt-xL7C4uml5cwJdxBk'
+
+	def read_access_token(self):
+		return tmdb_lists_read_token()
+
+	def read_access_headers(self):
+		return {'accept': 'application/json', 'content-type': 'application/json', 'Authorization': 'Bearer %s' % self.read_access_token()}
 	
 	def auth(self):
 		import requests
-		headers = {'accept': 'application/json', 'content-type': 'application/json', 'Authorization': 'Bearer %s' % self.read_access_token}
+		headers = self.read_access_headers()
 		data = requests.post('%s/auth/request_token' % self.base_url, headers=headers, timeout=20).json()
 		if not 'success' in data: return notification('Failed to Auth Account')
 		request_token = data['request_token']
@@ -37,15 +41,22 @@ class TMDbListAPI:
 				progressDialog.update('Please Scan the QR Code%s[CR]Confirm Access to your TMDb Account' % p_dialog_insert, count)
 				sleep(2500)
 			except: success = False
+		canceled = progressDialog.iscanceled()
 		progressDialog.close()
-		if success:
+		if canceled:
+			tmdb_lists_cache.clear_all()
+			return
+		if success is True:
 			success = self.add_tmdb3_to_session(response['access_token'], response['account_id'])
 		tmdb_lists_cache.clear_all()
-		notification('Success' if success else 'Failed')
+		if success is True:
+			notification('Success')
+		else:
+			notification('Failed')
 
 	def add_tmdb3_to_session(self, access_token, account_id):
 		import requests
-		headers = {'accept': 'application/json', 'content-type': 'application/json', 'Authorization': 'Bearer %s' % self.read_access_token}
+		headers = self.read_access_headers()
 		response = requests.post('https://api.themoviedb.org/3/authentication/session/convert/4', json={'access_token': access_token}, headers=headers, timeout=20).json()
 		session_id = response.get('session_id')
 		if response.get('success') and session_id: success = True
@@ -65,8 +76,8 @@ class TMDbListAPI:
 
 	def revoke(self):
 		import requests
-		headers = {'accept': 'application/json', 'content-type': 'application/json', 'Authorization': 'Bearer %s' % self.read_access_token}
-		data = requests.delete('https://api.themoviedb.org/3/auth/access_token', json={'access_token': self.read_access_token}, headers=headers, timeout=20).json()
+		headers = self.read_access_headers()
+		data = requests.delete('https://api.themoviedb.org/3/auth/access_token', json={'access_token': self.read_access_token()}, headers=headers, timeout=20).json()
 		if not 'success' in data: notice = 'Failed to Revoke Account Auth'
 		else:
 			notice = 'Success! Auth Revoked'
@@ -84,8 +95,9 @@ class TMDbListAPI:
 			except: pass
 		def _process(dummy):
 			result = self.request_data(url % (self.base_url, account_id, 1))
-			results_extend(result['results'])
-			total_pages = result['total_pages']
+			if not result: return results
+			results_extend(result.get('results') or [])
+			total_pages = result.get('total_pages') or 1
 			if total_pages > 1:
 				threads = TaskPool().tasks(_process_multi, range(2, total_pages + 1), max_threads())
 				[i.join() for i in threads]

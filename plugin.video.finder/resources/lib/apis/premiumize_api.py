@@ -19,21 +19,21 @@ class PremiumizeAPI:
 	def auth(self):
 		self.token = ''
 		line = '%s[CR]%s[CR]%s'
-		data = {'response_type': 'device_code', 'client_id': '978629017'}
+		data = {'response_type': 'device_code', 'client_id': '751712187'}
 		url = 'https://www.premiumize.me/token'
 		response = self._post(url, data)
 		user_code = response['user_code']
 		auth_url = response.get('verification_uri')
 		qr_code = make_qrcode(auth_url) or ''
 		copy2clip(auth_url)
-		content = 'Authorize Debrid Services[CR]Navigate to: [B]%s[/B][CR]Enter the following code: [B]%s[/B]' % (auth_url, user_code)
+		content = 'Please Scan the QR Code[CR]Full link copied to clipboard[CR]OR visit: [B]%s[/B][CR]AND Enter this Code: [B]%s[/B]' % (auth_url, user_code)
 		progressDialog = progress_dialog('Premiumize Authorize', qr_code)
 		progressDialog.update(content, 0)
 		device_code = response['device_code']
 		expires_in = int(response['expires_in'])
 		sleep_interval = int(response['interval'])
 		poll_url = 'https://www.premiumize.me/token'
-		data = {'grant_type': 'device_code', 'client_id': '978629017', 'code': device_code}
+		data = {'grant_type': 'device_code', 'client_id': '751712187', 'code': device_code}
 		start, time_passed = time.time(), 0
 		while not progressDialog.iscanceled() and time_passed < expires_in and not self.token:
 			sleep(1000 * sleep_interval)
@@ -154,9 +154,31 @@ class PremiumizeAPI:
 		response = self._post(url, data)
 		return response['status']
 
-	def transfers_list(self):
+	def transfers_list(self, fresh=False):
+		if fresh:
+			try:
+				from caches.base_cache import connect_database
+				dbcon = connect_database('maincache_db')
+				dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('pm_transfers_list',))
+			except:
+				pass
 		url = 'transfer/list'
-		return self._get(url)
+		response = self._get(url)
+		if not response or not isinstance(response, dict):
+			response = self._post(url, {})
+		if not response or not isinstance(response, dict):
+			return {'status': 'error', 'message': 'Invalid response', 'transfers': []}
+		if str(response.get('status', '')).lower() != 'success':
+			return response
+		transfers = response.get('transfers')
+		if transfers is None:
+			transfers = response.get('data') or []
+		if isinstance(transfers, dict):
+			transfers = list(transfers.values())
+		if not isinstance(transfers, list):
+			transfers = []
+		response['transfers'] = transfers
+		return response
 
 	def instant_transfer(self, magnet_url):
 		url = 'transfer/directdl'
@@ -179,10 +201,12 @@ class PremiumizeAPI:
 		response = self._post(url, data)
 		return response['status']
 
-	def get_item_details(self, item_id):
-		string = 'pm_item_details_%s' % item_id
+	def get_item_details(self, item_id, fresh=False):
 		url = 'item/details'
 		data = {'id': item_id}
+		if fresh:
+			return self._post(url, data)
+		string = 'pm_item_details_%s' % item_id
 		args = [url, data]
 		return cache_object(self._post, string, args, False, 0.5)
 
@@ -190,7 +214,7 @@ class PremiumizeAPI:
 		return url + '|' + urlencode(self.headers())
 
 	def headers(self):
-		return {'User-Agent': 'Finder for Kodi', 'Authorization': 'Bearer %s' % self.token}
+		return {'User-Agent': 'Finder', 'Authorization': 'Bearer %s' % self.token}
 
 	def _get(self, url, data={}):
 		if self.token in ('empty_setting', ''): return None

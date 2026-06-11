@@ -140,11 +140,11 @@ class MenuEditor:
 	def shortcut_folder_convert(self):
 		list_items = navigator_cache.get_shortcut_folder_contents(self.name)
 		valid_random_items = [i for i in list_items if i.get('mode').replace('random.', '') in kodi_utils.random_valid_type_check()]
-		make_random = '[COLOR red][RANDOM][/COLOR]' not in self.name
+		make_random = '[COLOR dodgerblue][RANDOM][/COLOR]' not in self.name
 		if make_random:
 			if not valid_random_items: return kodi_utils.notification('No random supported items in this list', 5000)
-			new_folder_name = self.name + ' [COLOR red][RANDOM][/COLOR]'
-		else: new_folder_name = self.name.replace(' [COLOR red][RANDOM][/COLOR]', '')
+			new_folder_name = self.name + ' [COLOR dodgerblue][RANDOM][/COLOR]'
+		else: new_folder_name = self.name.replace(' [COLOR dodgerblue][RANDOM][/COLOR]', '')
 		self._db_execute('delete', self.name, list_type='shortcut_folder', refresh=False)
 		self._db_execute('make_new_shortcut_folder', new_folder_name, list_items)
 

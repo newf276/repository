@@ -16,8 +16,8 @@
 </category>
 
 <category label="Undesirables"> <!-- Undesirables -->
-    <setting id="filter.foreign.single.audio" type="bool" label="Remove identified Foreign single audio sources" default="true" />
-    <setting id="filter.undesirables" type="bool" label="Remove Undesirables" default="true" />
+    <setting id="filter.foreign.single.audio" type="bool" label="Remove identified Foreign single audio sources" default="false" />
+    <setting id="filter.undesirables" type="bool" label="Remove Undesirables" default="false" />
         <setting type="action" label="Manage Default Undesirables" subsetting="true" enable="eq(-1,true)" action="RunPlugin(plugin://script.module.newfsscrapers/?action=undesirablesSelect)" />
         <setting type="action" label="Define Extra Undesirables (Comma Separated)" subsetting="true" enable="eq(-2,true)" action="RunPlugin(plugin://script.module.newfsscrapers/?action=undesirablesInput)" />
         <setting type="action" label="Remove Extra Undesirables" subsetting="true" enable="eq(-3,true)" action="RunPlugin(plugin://script.module.newfsscrapers/?action=undesirablesUserRemove)" />
@@ -26,16 +26,20 @@
 </category>
 
 <category label="Sources">
-	<setting label="[COLORghostwhite]Recomended Providers[/COLOR]" type="lsep" />
+	<setting label="[COLORcyan]DMM Setup [COLORghostwhite][B](Turn Other Scrapers Off)[/B][/COLOR][/COLOR]" type="lsep" />
+	<setting id="provider.dmm" type="bool" label="DMM" default="false" />
+	<setting id="provider.torz" type="bool" label="TORZ" default="false" />
+	<setting id="provider.bitmagnet" type="bool" label="BITMAGNET" default="false" />
+	<setting id="provider.mediafusion" type="bool" label="MEDIAFUSION" default="false" />
+	<setting id="provider.zilean" type="bool" label="ZILEAN" default="false" />
+	<setting label="[COLORcyan]Recomended Providers[/COLOR]" type="lsep" />
 	<setting id="provider.aiostreams" type="bool" label="[COLORcyan]AIOSTREAMS[/COLOR]" default="true" />
 	<setting id="provider.comet" type="bool" label="[COLORcyan]COMET[/COLOR]" default="true" />
     <setting id="provider.torrentio" type="bool" label="[COLORcyan]TORRENTIO[/COLOR]" default="true" />
 	<setting id="provider.torz" type="bool" label="[COLORcyan]TORZ[/COLOR]" default="true" />
 	<setting id="provider.torrentsdb" type="bool" label="[COLORcyan]TORRENTSDB[/COLOR]" default="true" />
 	<setting id="provider.mediafusion" type="bool" label="[COLORcyan]MEDIAFUSION[/COLOR]" default="false" />
-	<setting label="[COLORghostwhite]Secondary Providers[/COLOR]" type="lsep" />
-	<setting id="provider.bitmagnet" type="bool" label="[COLORgoldenrod]BITMAGNET[/COLOR]" default="false" />
-	<setting id="provider.dmm" type="bool" label="[COLORgoldenrod]DMM[/COLOR]" default="false" />
+	<setting label="[COLORcyan]Secondary Providers[/COLOR]" type="lsep" />
 	<setting id="provider.meteor" type="bool" label="[COLORgoldenrod]METEOR[/COLOR]" default="false" />
 	<setting id="provider.torrentdownload" type="bool" label="[COLORgoldenrod]TORRENTDL[/COLOR]" default="true" />
 	<setting id="provider.1337x" type="bool" label="[COLORgoldenrod]$NUMBER[1337]X[/COLOR]" default="false" />
@@ -45,7 +49,6 @@
     <setting id="provider.rutor" type="bool" label="[COLORgoldenrod]RUTOR[/COLOR]" default="true" />
 	<setting id="provider.knaben" type="bool" label="[COLORgoldenrod]KNABEN[/COLOR]" default="false" />
 	<setting id="provider.nyaa" type="bool" label="[COLORgoldenrod]NYAA[/COLOR] (Anime)" default="false" />
-	<setting id="provider.zilean" type="bool" label="[COLORgoldenrod]ZILEAN[/COLOR]" default="true" />
 	
 </category>
 	

@@ -247,7 +247,7 @@
 	</extension>
 </addon>
 
-<addon id="script.module.newfsscrapers" version="1.4.3" name="[COLOR deepskyblue]N[/COLOR]ewf's[COLOR deepskyblue] S[/COLOR]crapers [COLOR dodgerblue]M[/COLOR]odule" provider-name="Newf276">
+<addon id="script.module.newfsscrapers" version="1.4.4" name="[COLOR deepskyblue]N[/COLOR]ewf's[COLOR deepskyblue] S[/COLOR]crapers [COLOR dodgerblue]M[/COLOR]odule" provider-name="Newf276">
 	<requires>
 		<import addon="xbmc.python" version="3.0.0" />
 		<import addon="script.module.requests" />

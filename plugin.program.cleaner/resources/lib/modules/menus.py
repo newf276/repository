@@ -20,10 +20,10 @@ def main_menu():
     xbmcplugin.setPluginCategory(HANDLE, COLOR1('Main Menu'))
 
     if UPDATE_VERSION > BUILD_VERSION:
-        add_dir(COLOR3(f'[B]Build Update Available!!![/B]   [{CURRENT_BUILD} v{UPDATE_VERSION}]'), '', 32, addon_icon, addon_fanart, COLOR2(local_string(30110)), isFolder=False)  # Build Update Available
+        add_dir(COLOR2(f'[B]Build Update Available!!![/B]   [{CURRENT_BUILD} v{UPDATE_VERSION}]'), '', 32, addon_icon, addon_fanart, COLOR2(local_string(30110)), isFolder=False)  # Build Update Available
         
     elif CURRENT_BUILD not in ['No Build Installed', 'No Build']:
-        add_dir(COLOR4(f'Installed Build: {CURRENT_BUILD} v{BUILD_VERSION}'), '', '', addon_icon, addon_fanart, COLOR2(local_string(30111)), isFolder=False)  # Installed Build
+        add_dir(COLOR2(f'Installed Build: {CURRENT_BUILD} v{BUILD_VERSION}'), '', '', addon_icon, addon_fanart, COLOR2(local_string(30111)), isFolder=False)  # Installed Build
     
     add_dir(COLOR2(local_string(30010)), '', 1, addon_icon, addon_fanart, COLOR2(local_string(30001)), isFolder=True)  # Build Menu
     

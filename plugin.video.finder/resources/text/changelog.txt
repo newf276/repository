@@ -1,3 +1,9 @@
+[COLOR dodgerblue][B]Version 5.0.0[/B][/COLOR]
+
+Forked a Fork of a Fork
+
+- Too Many change stories mention...
+
 [COLOR dodgerblue][B]Version 1.2.9i[/B][/COLOR]
 - Sources Browse (cached pack): close the results list before the pack file picker and playback so video is not hidden behind the list; Back during episode browse no longer restarts scraping when playback is already active.
 - Sources Browse: limited to pack results only (single-file torrents use click-to-play); empty pack lists fall back to the same resolve path as clicking the source; one-file packs play without an extra picker step.

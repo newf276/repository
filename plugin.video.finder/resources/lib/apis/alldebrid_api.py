@@ -8,7 +8,7 @@ from caches.main_cache import cache_object
 from caches.settings_cache import get_setting, set_setting
 from modules.utils import copy2clip, make_qrcode, make_tinyurl
 from modules.source_utils import supported_video_extensions, seas_ep_filter, extras
-from modules.kodi_utils import progress_dialog, notification, hide_busy_dialog, show_busy_dialog, sleep, ok_dialog, progress_dialog, \
+from modules.kodi_utils import progress_dialog, notification, hide_busy_dialog, show_busy_dialog, confirm_dialog, sleep, ok_dialog, progress_dialog, \
 								notification, hide_busy_dialog
 # from modules.kodi_utils import logger
 
@@ -17,7 +17,7 @@ class AllDebridAPI:
 		self.token = get_setting('finder.ad.token', 'empty_setting')
 		self.break_auth_loop = False
 		self.base_url = 'https://api.alldebrid.com/v4/'
-		self.user_agent = 'Finder'
+		self.user_agent = 'Finder for Kodi'
 
 	def auth(self):
 		self.token = ''
@@ -31,8 +31,8 @@ class AllDebridAPI:
 		qr_code = make_qrcode(auth_url) or ''
 		short_url = make_tinyurl(auth_url)
 		copy2clip(auth_url)
-		if short_url: p_dialog_insert = '[CR]Full link copied to clipboard[CR]OR visit: [B]%s[/B][CR]OR Enter this Code: [B]%s[/B]' % (short_url, user_code)
-		else: p_dialog_insert = '[CR]Full link copied to clipboard[CR]OR Enter this Code: [B]%s[/B]' % user_code
+		if short_url: p_dialog_insert = 'OR visit this URL: [B]%s[/B][CR]OR Enter this Code: [B]%s[/B]' % (short_url, user_code)
+		else: p_dialog_insert = 'OR Enter this Code: [B]%s[/B]' % user_code
 		sleep_interval = 5
 		content = 'Please Scan the QR Code%s[CR]' % p_dialog_insert
 		progressDialog = progress_dialog('All Debrid Authorize', qr_code)
@@ -76,77 +76,27 @@ class AllDebridAPI:
 		return response
 
 	def check_cache(self, hashes):
-		if isinstance(hashes, str): hashes = [hashes]
-		if not hashes or self.token in ('empty_setting', ''): return None
-		params = [('agent', self.user_agent), ('apikey', self.token)]
-		for h in hashes:
-			h = str(h).lower()
-			if len(h) == 40:
-				params.append(('magnets[]', h))
-		if len(params) <= 2: return None
-		try:
-			result = requests.get('%smagnet/instant' % self.base_url, params=params, timeout=20).json()
-			if result.get('status') != 'success': return None
-			data = result.get('data') or result
-			if isinstance(data, dict) and 'magnets' in data: return data
-			if isinstance(data, list): return {'magnets': data}
-		except: pass
-		return None
+		data = {'magnets[]': hashes}
+		response = self._post('magnet/instant', data)
+		return response
 
 	def check_single_magnet(self, hash_string):
-		response = self.check_cache([hash_string])
-		if not response or 'magnets' not in response or not response['magnets']: return False
-		cache_info = response['magnets'][0]
-		if cache_info.get('error'): return False
-		instant = cache_info.get('instant')
-		if instant is True or instant == 1: return True
-		if str(instant).lower() in ('true', '1', 'yes'): return True
-		ready = cache_info.get('ready')
-		if ready is True or ready == 1: return True
-		return str(ready).lower() in ('true', '1', 'yes')
+		cache_info = self.check_cache(hash_string)['magnets'][0]
+		return cache_info['instant']
 
-	def _delete_cache_key(self, string):
-		try:
-			from caches.base_cache import connect_database
-			dbcon = connect_database('maincache_db')
-			dbcon.execute("""DELETE FROM maincache WHERE id=?""", (string,))
-		except:
-			pass
-
-	def clear_mylist_cache(self):
-		for string in ('ad_user_cloud', 'ad_user_history', 'ad_user_links'):
-			self._delete_cache_key(string)
-
-	def user_cloud(self, fresh=False):
+	def user_cloud(self):
 		url = 'magnet/status'
-		if fresh:
-			self._delete_cache_key('ad_user_cloud')
-			return self._get(url) or {'magnets': []}
 		string = 'ad_user_cloud'
 		return cache_object(self._get, string, url, False, 0.03)
 
-	def magnets_list(self, fresh=True):
-		if fresh:
-			self._delete_cache_key('ad_user_cloud')
-		result = self._get('magnet/status')
-		if not result or not isinstance(result, dict):
-			return 'Invalid response', []
-		return None, result.get('magnets') or []
-
-	def history(self, fresh=False):
+	def history(self):
 		url = 'user/history'
-		if fresh:
-			self._delete_cache_key('ad_user_history')
-			return self._get(url) or {}
-		string = 'ad_user_history'
+		string = "ad_user_history"
 		return cache_object(self._get, string, url, False, 0.03)
 
-	def user_links(self, fresh=False):
+	def user_links(self):
 		url = 'user/links'
-		if fresh:
-			self._delete_cache_key('ad_user_links')
-			return self._get(url) or {}
-		string = 'ad_user_links'
+		string = "ad_user_links"
 		return cache_object(self._get, string, url, False, 0.03)
 
 	def unrestrict_link(self, link):
@@ -156,25 +106,23 @@ class AllDebridAPI:
 		try: return response['link']
 		except: return None
 
-	def create_transfer(self, magnet):
+	def create_transfer(self, magnet, is_finished=True):
 		url = 'magnet/upload'
 		url_append = '&magnet=%s' % magnet
 		result = self._get(url, url_append)
-		if not result or 'error' in result:
-			return 'no_url'
-		try:
-			transfer_id = result['magnets'][0].get('id', None)
-		except (IndexError, KeyError, TypeError):
-			return 'no_url'
-		if not transfer_id:
-			return 'no_url'
-		return transfer_id
+		result = result['magnets'][0]
+		if is_finished: return result.get('id', ''), result.get('ready')
+		else: return result.get('id', '')
 
 	def list_transfer(self, transfer_id):
+		def _process(dummy):
+			result = self._get(url, url_append)
+			return result['magnets']
 		url = 'magnet/status'
 		url_append = '&id=%s' % transfer_id
-		result = self._get(url, url_append)
-		return result['magnets']
+		string = 'ad_list_transfer_%s' % transfer_id
+		return cache_object(_process, string, 'dummy', False)
+		result = result['magnets']
 
 	def delete_transfer(self, transfer_id):
 		url = 'magnet/delete'
@@ -192,12 +140,13 @@ class AllDebridAPI:
 		return results
 
 	def resolve_magnet(self, magnet_url, info_hash, store_to_cloud, title, season, episode):
-		file_url, media_id, transfer_id = None, None, None
 		try:
+			file_url, media_id, transfer_id = None, None, None
 			extensions = supported_video_extensions()
 			correct_files = []
-			transfer_id, links = self.parse_magnet(magnet_url=magnet_url)
-			if not transfer_id: return None
+			transfer_id, ready = self.create_transfer(magnet_url)
+			if not ready: return None
+			links = self.browse_folder(transfer_id)
 			valid_results = [i for i in links if any(i.get('n').lower().endswith(x) for x in extensions) and not i.get('l', '') == '']
 			if valid_results:
 				if season:
@@ -215,18 +164,19 @@ class AllDebridAPI:
 				if not any(file_url.lower().endswith(x) for x in extensions): file_url = None
 			return file_url
 		except:
-			if transfer_id:
-				try:self.delete_transfer(transfer_id)
-				except: pass
+			try:
+				if transfer_id: self.delete_transfer(transfer_id)
+			except: pass
 			return None
 	
 	def display_magnet_pack(self, magnet_url, info_hash):
 		from modules.source_utils import supported_video_extensions
-		transfer_id = None
 		try:
+			transfer_id = None
 			extensions = supported_video_extensions()
-			transfer_id, links = self.parse_magnet(magnet_url=magnet_url)
-			if not transfer_id: return None
+			transfer_id, ready = self.create_transfer(magnet_url)
+			if not ready: return None
+			links = self.browse_folder(transfer_id)
 			end_results = [{'link': i['l'], 'filename': i['n'], 'size': i['s']} for i in links
 							if any(i.get('n').lower().endswith(x) for x in extensions) and not i.get('l', '') == '']
 			self.delete_transfer(transfer_id)
@@ -237,15 +187,10 @@ class AllDebridAPI:
 			except: pass
 			return None
 
-	def parse_magnet(self, magnet_url=None, transfer_id=None):
-		if magnet_url:
-			transfer_id = self.create_transfer(magnet_url)
-			if not transfer_id: return None, []
-			sleep(1000)
-		transfer_info = self.list_transfer(transfer_id)
-		if transfer_info['statusCode'] != 4: return transfer_id, []
-		links = self.correct_files_list(transfer_info.get('files', []))
-		return transfer_id, links
+	def browse_folder(self, folder_id):
+		try: links = self.correct_files_list(self.list_transfer(folder_id).get('files', []))
+		except: links = []
+		return links
 
 	def _get(self, url, url_append=''):
 		result = None
@@ -258,11 +203,10 @@ class AllDebridAPI:
 		except: pass
 		return result
 
-	def _post(self, url, data=None):
+	def _post(self, url, data={}):
 		result = None
 		try:
 			if self.token in ('empty_setting', ''): return None
-			if data is None: data = {}
 			url = self.base_url + url + '?agent=%s&apikey=%s' % (self.user_agent, self.token)
 			result = requests.post(url, data=data, timeout=20).json()
 			if result.get('status') == 'success' and 'data' in result: result = result['data']

@@ -34,7 +34,7 @@
                     <left>1590</left>
                     <width max="300">auto</width>
                     <height>20</height>
-                    <font>font37</font> <!-- Finder_38 -->
+                    <font>font37</font> <!-- finder_38 -->
                     <textcolor>FFCCCCCC</textcolor>
                     <align>right</align>
                     <aligny>center</aligny>
@@ -45,7 +45,7 @@
                     <left>1540</left>
                     <width max="350">auto</width>
                     <height>20</height>
-                    <font>font10</font> <!-- Finder_21 -->
+                    <font>font10</font> <!-- finder_21 -->
                     <textcolor>FFCCCCCC</textcolor>
                     <align>right</align>
                     <aligny>center</aligny>
@@ -56,11 +56,11 @@
                     <top>25</top>
                     <width>1520</width>
                     <height>20</height>
-                    <font>font10</font> <!-- Finder_21 -->
+                    <font>font10</font> <!-- finder_21 -->
                     <textcolor>FFFFFFFF</textcolor>
                     <align>left</align>
                     <aligny>center</aligny>
-                    <label>[UPPERCASE]Page $INFO[Window.Property(page_no)][/UPPERCASE] $INFO[Window.Property(item_count),(x,)][B] | [UPPERCASE]$INFO[Container(2000).ListItem.Property(name)][/B][/UPPERCASE]</label>
+                    <label>[UPPERCASE]Page $INFO[Window.Property(page_no)][B] | $INFO[Container(2000).ListItem.Property(name)][/B][/UPPERCASE]</label>
                 </control>
             </control>
             <control type="panel" id="2000">
@@ -78,7 +78,7 @@
                         <top>0</top>
                         <width>320</width>
                         <height>320</height>
-                        <texture colordiffuse="$INFO[Window(10000).Property(finder.window_theme)]" border="12">finder_common/panel-256-box.png</texture>
+                        <texture colordiffuse="FF1F2020" border="12">finder_common/panel-256-box.png</texture>
                     </control>
                     <control type="image">
                         <left>10</left>

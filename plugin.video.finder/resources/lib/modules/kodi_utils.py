@@ -1,17 +1,9 @@
 # -*- coding: utf-8 -*-
-# TRUMP - UNFIT FOR OFFICE
-import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
+
 import os
 from urllib.parse import urlencode, unquote
+import xbmc, xbmcgui, xbmcplugin, xbmcvfs, xbmcaddon
 
-def addon_themes():
-	return [{'name': 'Light', 'value': ('FF434343', 'FF2E2E2E'), 'icon': 'light'}, {'name': 'Medium', 'value': ('FF373737', 'FF4a4347'), 'icon': 'medium'},
-			{'name': 'Dark', 'value': ('FF1F2020', 'FF4F4F4F'), 'icon': 'dark'}]
-
-def addon_themes_opacity():
-	return [{'name': '100%', 'value': 'FF'}, {'name': '95%', 'value': 'F2'}, {'name': '90%', 'value': 'E6'}, {'name': '85%', 'value': 'D9'}, {'name': '80%', 'value': 'CC'},
-			{'name': '75%', 'value': 'BF'}, {'name': '70%', 'value': 'B3'}, {'name': '65%', 'value': 'A6'}, {'name': '60%', 'value': '99'}, {'name': '55%', 'value': '8C'},
-			{'name': '50%', 'value': '80'}]
 
 def random_valid_type_check():
 	return {'build_movie_list': 'movie', 'build_tvshow_list': 'tvshow', 'build_season_list': 'season', 'build_episode_list': 'episode',
@@ -26,48 +18,22 @@ def random_episodes_check():
 
 def extras_button_label_values():
 	return {'movie':
-				{'movies_play': 'Play', 'show_trailers': 'Trailer', 'show_images': 'Images',  'show_extrainfo': 'Extra Info', 'show_genres': 'Genres',
-				'show_director': 'Director', 'show_options': 'Options', 'show_recommended': 'Recommended', 'show_related': 'Related', 'show_more_like_this': 'More Like This',
-				'show_similar': 'Similar', 'show_reviews': 'Reviews', 'show_comments': 'Comments', 'show_trivia': 'Trivia', 'show_blunders': 'Blunders',
-				'show_year': 'More Year', 'show_genre': 'More Genres', 'show_network': 'More Network',
-				'show_trakt_manager': 'Trakt Lists', 'show_personallists_manager': 'Personal Lists', 'show_tmdb_manager': 'TMDb Lists',
-				'show_favorites_manager': 'Favorites Lists', 'playback_choice': 'Play Options', 'show_plot': 'Plot', 'show_keywords': 'Keywords',
-				'show_in_trakt_lists': 'In Trakt Lists', 'close_all': 'Close'},
+				{'movies_play': 'Playback', 'show_trailers': 'Trailer', 'show_images': 'Images',  'show_extrainfo': 'Extra Info', 'show_genres': 'Genres',
+				'show_director': 'Director', 'show_options': 'Options', 'show_recommended': 'Recommended', 'show_more_like_this': 'More Like This',
+				'show_trakt_manager': 'Trakt Lists', 'show_personallists_manager': 'Personal Lists', 'show_tmdb_manager': 'TMDb Lists', 'show_favorites_manager': 'Favorites Lists',
+				'playback_choice': 'Playback Options', 'show_plot': 'Plot', 'show_keywords': 'Keywords', 'show_in_trakt_lists': 'In Trakt Lists', 'close_all': 'Close All Dialogs'},
 			'tvshow':
 				{'tvshow_browse': 'Browse', 'show_trailers': 'Trailer', 'show_images': 'Images', 'show_extrainfo': 'Extra Info', 'show_genres': 'Genres',
-				'play_nextep': 'Play Next', 'show_options': 'Options', 'show_recommended': 'Recommended', 'show_related': 'Related', 'show_more_like_this': 'More Like This',
-				'show_similar': 'Similar', 'show_reviews': 'Reviews', 'show_comments': 'Comments', 'show_trivia': 'Trivia', 'show_blunders': 'Blunders',
-				'show_year': 'More Year', 'show_genre': 'More Genres', 'show_network': 'More Network',
-				'show_trakt_manager': 'Trakt Lists', 'show_personallists_manager': 'Personal Lists', 'show_tmdb_manager': 'TMDb Lists',
-				'show_favorites_manager': 'Favorites Lists', 'play_random_episode': 'Play Random', 'show_plot': 'Plot', 'show_keywords': 'Keywords',
-				'show_in_trakt_lists': 'In Trakt Lists', 'close_all': 'Close'}}
-
-def extras_items():
-	return [{'name': 'Plot', 'value': 2050}, {'name': 'Cast', 'value': 2051}, {'name': 'Recommended', 'value': 2052}, {'name': 'Related', 'value': 2053},
-	{'name': 'More Like This', 'value': 2054}, {'name': 'Similar', 'value': 2055}, {'name': 'Reviews', 'value': 2056}, {'name': 'Comments', 'value': 2057},
-	{'name': 'Trivia', 'value': 2058}, {'name': 'Blunders', 'value': 2059}, {'name': 'Parental Guide', 'value': 2060}, {'name': 'In Trakt Lists', 'value': 2061},
-	{'name': 'Videos', 'value': 2062}, {'name': 'More from Year', 'value': 2063}, {'name': 'More from Genres', 'value': 2064}, {'name': 'More from Networks', 'value': 2065},
-	{'name': 'More from Collection', 'value': 2066}]
+				'play_nextep': 'Play Next', 'show_options': 'Options', 'show_recommended': 'Recommended', 'show_more_like_this': 'More Like This',
+				'show_trakt_manager': 'Trakt Lists', 'show_personallists_manager': 'Personal Lists', 'show_tmdb_manager': 'TMDb Lists', 'show_favorites_manager': 'Favorites Lists',
+				'play_random_episode': 'Play Random', 'show_plot': 'Plot', 'show_keywords': 'Keywords', 'show_in_trakt_lists': 'In Trakt Lists', 'close_all': 'Close All Dialogs'}}
 
 def context_menu_items():
-	return [
-	{'name': 'Extras', 'value': 'extras'}, {'name': 'Options', 'value': 'options'}, {'name': 'Play Options', 'value': 'playback_options'},
-	{'name': 'Browse Movie Set', 'value': 'browse_movie_set'}, {'name': 'Browse TV Seasons', 'value': 'browse_seasons'},
-	{'name': 'Browse Season Episodes', 'value': 'browse_episodes'}, {'name': 'Browse Recommended', 'value': 'recommended'}, {'name': 'Browse Related', 'value': 'related'},
-	{'name': 'Browse More Like This', 'value': 'more_like_this'}, {'name': 'Browse Similar', 'value': 'similar'}, {'name': 'In Trakt Lists', 'value': 'in_trakt_list'},
-	{'name': 'Trakt Lists Manager', 'value': 'trakt_manager'}, {'name': 'Personal Lists Manager', 'value': 'personal_manager'},
-	{'name': 'TMDb Lists Manager', 'value': 'tmdb_manager'}, {'name': 'Favorites Manager', 'value': 'favorites_manager'}, {'name': 'Mark Watched/Unwatched', 'value': 'mark_watched'},
-	{'name': 'Unmark Previous Watched Episode', 'value': 'unmark_previous_episode'}, {'name': 'Exit List', 'value': 'exit'}, {'name': 'Refresh Widgets', 'value': 'refresh'},
-	{'name': 'Reload Widgets', 'value': 'reload'}]
-
-def rescrape_items():
-	return [
-	{'name': 'Rescrape With No Cache Check', 'value': 'cache_ignored'},
-	{'name': 'Rescrape With IMDb Year Data', 'value': 'imdb_year'},
-	{'name': 'Rescrape With Disabled External Providers', 'value': 'with_all'},
-	{'name': 'Rescrape With Episode Group', 'value': 'episode_group'},
-	{'name': 'Rescrape with Filters Ignored', 'value': 'ignore_filters'},
-	{'name': 'Offer Full Search After Early Results', 'value': 'full_scrape'}]
+	return {'extras': 'Extras', 'options': 'Options', 'playback_options': 'Playback Options', 'browse_movie_set': 'Browse Movie Set', 'browse_seasons': 'Browse TV Seasons',
+			'browse_episodes': 'Browse Season Episodes', 'recommended': 'Browse Recommended', 'more_like_this': 'Browse More Like This', 'similar': 'Browse Similar',
+			'in_trakt_list': 'In Trakt Lists', 'trakt_manager':'Trakt Lists Manager', 'personal_manager': 'Personal Lists Manager', 'tmdb_manager': 'TMDb Lists Manager',
+			'favorites_manager': 'Favorites Manager', 'mark_watched': 'Mark Watched/Unwatched', 'unmark_previous_episode': 'Unmark Previous Watched Episode',
+			'exit': 'Exit List', 'refresh': 'Refresh Widgets', 'reload': 'Reload Widgets'}
 
 def video_extensions():
 	return ('m4v', '3g2', '3gp', 'nsv', 'tp', 'ts', 'ty', 'pls', 'rm', 'rmvb', 'mpd', 'ifo', 'mov', 'qt', 'divx', 'xvid', 'bivx', 'vob', 'nrg', 'img', 'iso', 'udf', 'pva',
@@ -103,33 +69,6 @@ def kodi_player():
 def kodi_dialog():
 	return xbmcgui.Dialog()
 
-def is_android():
-	return get_visibility('System.Platform.Android')
-
-def _folder_has_entries(path):
-	try:
-		tpath = translate_path(path)
-		if not path_exists(tpath) or not os.path.isdir(tpath):
-			return False
-		with os.scandir(tpath) as scan:
-			return any(True for _ in scan)
-	except:
-		return False
-
-def safe_browse_defaultt(path):
-	# Kodi on Android can block parent navigation when browse opens inside a non-empty folder.
-	if not is_android() or not path or path in ('None', ''):
-		return path
-	if _folder_has_entries(path):
-		return ''
-	return path
-
-def browse_directory(defaultt=''):
-	return kodi_dialog().browse(0, '', '', defaultt=safe_browse_defaultt(defaultt) or None)
-
-def browse_file(mask='', defaultt=''):
-	return kodi_dialog().browse(1, '', '', mask, defaultt=safe_browse_defaultt(defaultt) or None)
-
 def addon_info(info):
 	return xbmcaddon.Addon('plugin.video.finder').getAddonInfo(info)
 
@@ -150,41 +89,10 @@ def addon_icon_mini():
 														os.path.basename(translate_path(addon_info('icon'))))
 
 def addon_fanart():
-	return (
-		get_property('finder.addon_fanart')
-		or 'special://home/addons/plugin.video.finder/fanart.jpg'
-	)
+	return get_property('finder.addon_fanart') or translate_path(addon_info('fanart'))
 
-MEDIA_GITHUB_USER = 'newf276'
-MEDIA_GITHUB_REPO = 'newf276.github.io'
-MEDIA_GITHUB_RAW = 'https://raw.githubusercontent.com/%s/%s/master/packages/media' % (MEDIA_GITHUB_USER, MEDIA_GITHUB_REPO)
-LEGACY_MEDIA_GITHUB_RAW = 'https://raw.githubusercontent.com/newf276/newf276.github.io/master/packages/media'
-
-def media_github_credentials():
-	return MEDIA_GITHUB_USER, MEDIA_GITHUB_REPO
-
-def get_icon(image_name, image_folder='icons', image_type='png'):
-	local_path = os.path.join(addon_info('path'), 'resources', 'media', image_folder, '%s.%s' % (image_name, image_type))
-	if os.path.exists(local_path):
-		return local_path
-	return '%s/%s/%s.%s' % (MEDIA_GITHUB_RAW, image_folder, image_name, image_type)
-
-def resolve_list_icon(icon, default_name='folder'):
-	if not icon:
-		return get_icon(default_name)
-	if icon.startswith('http'):
-		if icon.startswith(LEGACY_MEDIA_GITHUB_RAW):
-			return MEDIA_GITHUB_RAW + icon[len(LEGACY_MEDIA_GITHUB_RAW):]
-		return icon
-	icon_norm = icon.replace('\\', '/')
-	if icon_norm.startswith('special://') or 'plugin.video.finder/resources/media/' in icon_norm:
-		for folder in ('icons', 'flags', 'network_icons', 'results', 'rpdb_posters', 'themes'):
-			if '/%s/' % folder in icon_norm:
-				name = os.path.splitext(os.path.basename(icon_norm))[0]
-				ext = os.path.splitext(icon_norm)[1].lstrip('.') or 'png'
-				return get_icon(name, folder, ext)
-		return get_icon(os.path.splitext(os.path.basename(icon_norm))[0])
-	return get_icon(icon)
+def get_icon(image_name, image_folder='icons'):
+	return translate_path('special://home/addons/plugin.video.finder/resources/media/%s/%s.png' % (image_folder, image_name))
 
 def get_addon_fanart():
 	return get_property('finder.default_addon_fanart') or addon_fanart()
@@ -251,6 +159,28 @@ def append_path(_path):
 
 def logger(heading, function):
 	xbmc.log('###%s###: %s' % (heading, function), 1)
+	try:
+		debug_on = kodi_window().getProperty('finder.addon_debug')
+		if not debug_on:
+			try:
+				from caches.settings_cache import get_setting as _gs
+				debug_on = _gs('finder.addon_debug')
+			except: pass
+		if debug_on != 'true': return
+		import datetime
+		log_file = xbmcvfs.translatePath('special://logpath/finder.log')
+		now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		with open(log_file, 'a', encoding='utf-8') as f:
+			f.write('%s [%s]: %s\n' % (now, heading, function))
+	except Exception as e:
+		xbmc.log('###finder_logger_error###: %s' % e, 1)
+
+def clear_finder_log():
+	try:
+		log_file = xbmcvfs.translatePath('special://logpath/finder.log')
+		open(log_file, 'w', encoding='utf-8').close()
+		ok_dialog(heading='Finder Debug Log', text='Debug log cleared.')
+	except: pass
 
 def kodi_window():
 	return xbmcgui.Window(10000)
@@ -376,25 +306,6 @@ def reload_skin():
 def kodi_refresh():
 	execute_builtin('UpdateLibrary(video,special://skin/foo)')
 
-def schedule_widget_refresh(silent=True, reload_skin=False):
-	url = 'plugin://plugin.video.finder/?mode=refresh_widgets&silent=%s&reload_skin=%s' % ('true' if silent else 'false', 'true' if reload_skin else 'false')
-	execute_builtin('AlarmClock(finder_widget_refresh,RunPlugin(%s),00:00:02,silent)' % url)
-
-def refresh_widgets(silent=False, reload_skin=False):
-	from caches.settings_cache import get_setting
-	from caches.random_widgets_cache import RandomWidgets
-	from caches.lists_cache import lists_cache
-	RandomWidgets().delete_like('random_list.%')
-	if reload_skin: lists_cache.delete_like('trakt_movies_trending_%')
-	kodi_refresh()
-	try:
-		if home(): container_refresh()
-	except: pass
-	if reload_skin:
-		try: execute_builtin('AlarmClock(finder_widget_skin,ReloadSkin(),00:00:01,silent)')
-		except: pass
-	if not silent and get_setting('finder.widget_refresh_notification', 'true') == 'true': notification('Widgets Refreshed', 2500)
-
 def run_plugin(params, block=False):
 	if isinstance(params, dict): params = build_url(params)
 	return execute_builtin('RunPlugin(%s)' % params, block)
@@ -464,16 +375,7 @@ def jsonrpc_get_system_setting(setting_id, setting_value=''):
 	except: result = setting_value
 	return result
 
-def jsonrpc_set_system_setting(setting_id, value):
-	command = {'jsonrpc': '2.0', 'id': 1, 'method': 'Settings.SetSettingValue', 'params': {'setting': setting_id, 'value': value}}
-	try: return get_jsonrpc(command)
-	except: return None
-
 def open_settings():
-	try:
-		from apis.aiostreams_api import refresh_settings_properties
-		refresh_settings_properties()
-	except: pass
 	from windows.base_window import open_window
 	open_window(('windows.settings_manager', 'SettingsManager'), 'settings_manager.xml')
 
@@ -520,24 +422,14 @@ def show_text(heading, text=None, file=None, font_size='small', kodi_log=False):
 	text = ''.join(text)
 	return open_window(('windows.textviewer', 'TextViewer'), 'textviewer.xml', heading=heading, text=text, font_size=font_size)
 
-LIST_ITEM_NOT_IN_LIST = 'Item not in list'
-
-def notification(line1, time=5000, icon=None, settle_ms=0):
-	# Brief delay helps Kodi show the toast after select/confirm dialogs close (rapid calls can drop it otherwise).
-	if settle_ms: sleep(settle_ms)
-	kodi_dialog().notification('Finder', line1, icon or addon_icon(), time)
-
-def player_check(mode, params):
-	from modules.settings import playback_key
-	if mode == 'playback.%s' % playback_key():
-		from modules.sources import Sources
-		Sources().playback_prep(params)
-	elif mode == 'playback.video':
-		from modules.player import FinderPlayer
-		FinderPlayer().run(params.get('url', None), params.get('obj', None))
-	else: ok_dialog('External Playback Detected', 'Playback through external addons is not supported')
+def notification(line1, time=5000, icon=None):
+	kodi_dialog().notification('finder', line1, icon or addon_icon(), time)
 
 def external_playback_check(params):
+	from modules.settings import playback_key
+	if not playback_key() in params:
+		ok_dialog('External Playback Detected', 'Playback through external addons is not supported.[CR]')
+		return False
 	return True
 
 def timeIt(func):
@@ -566,28 +458,10 @@ def focus_index(index):
 	try: current_window.getControl(focus_id).selectItem(index)
 	except: pass
 
-def get_all_icons():
-	import requests
-	from caches.main_cache import cache_object
-	username, location = media_github_credentials()
-	def _process(dummy):
-		try:
-			results = requests.get('https://api.github.com/repos/%s/%s/contents/packages/media/icons' % (username, location))
-			results = [i['name'].replace('.png', '') for i in results.json()]
-			return results
-		except: return ['folder']
-	return cache_object(_process, 'all_icons', 'foo', False, 168)
-
-def get_all_addon_icons():
-	import requests
-	from caches.main_cache import cache_object
-	username, location = media_github_credentials()
-	def _process(dummy):
-		try:
-			results = requests.get('https://api.github.com/repos/%s/%s/contents/packages/addon_icons' % (username, location))
-			return results.json()
-		except: return []
-	return cache_object(_process, 'all_addon_icons', 'foo', True, 168)
+def get_all_icon_vars():
+	icon_items = list_dirs(translate_path('special://home/addons/plugin.video.finder/resources/media/icons'))[1]
+	icon_items = [i.replace('.png', '') for i in icon_items]
+	return icon_items
 
 def upload_logfile(params):
 	import json
@@ -600,42 +474,30 @@ def upload_logfile(params):
 	if log_file == None: return
 	log_name, log_file = log_file
 	if not confirm_dialog(heading=log_name): return
-	progressDialog = None
+	show_busy_dialog()
 	url = 'https://paste.kodi.tv/'
 	log_file = translate_path('special://logpath/%s' % log_file)
 	if not path_exists(log_file): return ok_dialog(text='Error. Log Upload Failed')
 	try:
-		show_busy_dialog()
-		try:
-			with open_file(log_file) as f: text = f.read()
-			UserAgent = 'script.kodi.loguploader: 1.0'
-			response = requests.post('%s%s' % (url, 'documents'), data=text.encode('utf-8', errors='ignore'), headers={'User-Agent': UserAgent}).json()
-		finally:
-			hide_busy_dialog()
-		if 'key' not in response:
-			return ok_dialog(text='Error. Log Upload Failed')
-		user_code = response['key']
-		url = '%s%s' % (url, user_code)
-		copy2clip(url)
-		qr_code = make_qrcode(url) or ''
-		progressDialog = progress_dialog(heading='Kodi Log Uploader', icon=qr_code)
-		countdown_secs = 120
-		remaining = countdown_secs
-		while not progressDialog.iscanceled() and remaining > 0:
-			progressDialog.update(
-				'Share or Access with this url: [B]%s[/B][CR]Or scan the QR code on another device.[CR][CR]Auto-closes in [B]%d[/B] seconds (Back to dismiss now).' % (url, remaining),
-				int(100 * remaining / countdown_secs))
-			for _ in range(10):
-				if progressDialog.iscanceled(): break
-				sleep(100)
-			remaining -= 1
-	except:
-		ok_dialog(text='Error. Log Upload Failed')
-	finally:
-		hide_busy_dialog()
-		if progressDialog:
-			try: progressDialog.close()
-			except: pass
+		with open_file(log_file) as f: text = f.read()
+		UserAgent = 'script.kodi.loguploader: 1.0'
+		response = requests.post('%s%s' % (url, 'documents'), data=text.encode('utf-8', errors='ignore'), headers={'User-Agent': UserAgent}).json()
+		if 'key' in response:
+			user_code = response['key']
+			url = '%s%s' % (url, user_code)
+			copy2clip(url)
+			qr_code = make_qrcode(url) or ''
+			progressDialog = progress_dialog(heading='Kodi Log Uploader', icon=qr_code)
+			count, success = 20, None
+			while not progressDialog.iscanceled() and count >= 0 and success == None:
+				try:
+					count -= 1
+					progressDialog.update('Share or Access with this url: [B]%s[/B][CR]Or Access using this QR Code' % url, count)
+					sleep(2500)
+				except: success = False
+		else: ok_dialog(text='Error. Log Upload Failed')
+	except: ok_dialog(text='Error. Log Upload Failed')
+	hide_busy_dialog()
 
 def fetch_kodi_imagecache(image):
 	import sqlite3 as database

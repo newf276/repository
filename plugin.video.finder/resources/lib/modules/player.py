@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 import xbmc
 import json
 from threading import Thread
@@ -8,142 +7,49 @@ from caches.settings_cache import get_setting
 from modules import kodi_utils as ku, settings as st, watched_status as ws
 # logger = ku.logger
 
-PROP_RESOLVE_CANCEL = 'finder.resolve_cancelled'
-PROP_PLAY_OPENING = 'finder.play_opening'
-
-class FinderPlayer(xbmc.Player):
+class finderPlayer(xbmc.Player):
 	def __init__ (self):
 		xbmc.Player.__init__(self)
 
-	def _resolve_cancelled(self):
-		if not self.is_generic and (self.sources_object._resolve_user_cancelled or self.sources_object.cancel_all_playback):
-			return True
-		return ku.get_property(PROP_RESOLVE_CANCEL) == 'true'
-
 	def run(self, url=None, obj=None):
 		ku.hide_busy_dialog()
-		self.clear_playback_properties(clear_navigation=False)
-		if not url:
-			self.is_generic = obj == 'video'
-			return self.run_error('No playable link was returned.')
+		self.clear_playback_properties()
+		if not url: return self.run_error()
 		try: return self.play_video(url, obj)
-		except:
-			self.is_generic = obj == 'video'
-			return self.run_error()
+		except: return self.run_error()
 
 	def play_video(self, url, obj):
 		self.set_constants(url, obj)
-		if not self.is_generic and self._resolve_cancelled():
-			self.playback_successful = False
-			self.cancel_all_playback = True
-			self.sources_object.cancel_all_playback = True
-			self.sources_object._resolve_user_cancelled = True
-			return
 		ku.volume_checker()
-		ku.set_property(PROP_PLAY_OPENING, 'true')
 		self.play(self.url, self.make_listing())
-		if self.is_generic:
-			self.check_playback_start_generic()
-			if self.playback_successful:
-				ku.clear_property(PROP_PLAY_OPENING)
-			else:
-				self.safe_stop()
-				return self.run_error()
-		else:
+		if not self.is_generic:
 			self.check_playback_start()
-			if self.playback_successful:
-				ku.clear_property(PROP_PLAY_OPENING)
-				self.monitor()
+			if self.playback_successful: self.monitor()
 			else:
 				self.sources_object.playback_successful = self.playback_successful
-				cancelled = self.cancel_all_playback or self.sources_object._resolve_user_cancelled
-				if cancelled:
-					self.sources_object.cancel_all_playback = True
-					self.sources_object._resolve_user_cancelled = True
-				else:
-					self.sources_object.cancel_all_playback = self.cancel_all_playback
-				if cancelled:
-					if not self.sources_object._resolve_user_cancelled:
-						self.kill_dialog()
-				else:
-					self.kill_dialog()
-					self.run_error()
-				self.safe_stop()
-		try: del self.kodi_monitor
-		except: pass
-
-	def check_playback_start_generic(self):
-		resolve_percent = 0
-		while self.playback_successful is None:
-			ku.hide_busy_dialog()
-			if self.kodi_monitor.abortRequested():
-				self.playback_successful = False
-				break
-			elif resolve_percent >= 100:
-				self.playback_successful = False
-				break
-			elif ku.get_visibility('Window.IsTopMost(okdialog)'):
-				ku.execute_builtin('SendClick(okdialog, 11)')
-				self.playback_successful = False
-			elif self.isPlayingVideo():
-				try:
-					if self.getTotalTime() not in ('0.0', '', 0.0, None) and ku.get_visibility('Window.IsActive(fullscreenvideo)'):
-						self.playback_successful = True
-				except:
-					pass
-			resolve_percent = round(resolve_percent + 0.26, 1)
-			ku.sleep(50)
+				self.sources_object.cancel_all_playback = self.cancel_all_playback
+				if self.cancel_all_playback: self.kill_dialog()
+				self.stop()
+			try: del self.kodi_monitor
+			except: pass
 
 	def check_playback_start(self):
 		resolve_percent = 0
 		while self.playback_successful is None:
 			ku.hide_busy_dialog()
-			if self._resolve_cancelled():
-				self.sources_object.cancel_all_playback = True
-				self.sources_object._resolve_user_cancelled = True
-				self.playback_successful = False
-				self.safe_stop()
-				break
-			elif not self.sources_object.progress_dialog:
-				if self._resolve_cancelled():
-					self.sources_object.cancel_all_playback = True
-					self.sources_object._resolve_user_cancelled = True
-					self.playback_successful = False
-					self.safe_stop()
-					break
-				elif self.isPlayingVideo():
-					try:
-						if self.getTotalTime() not in ('0.0', '', 0.0, None) and ku.get_visibility('Window.IsActive(fullscreenvideo)'):
-							self.playback_successful = True
-					except: pass
+			if not self.sources_object.progress_dialog: self.playback_successful = True
 			elif self.sources_object.progress_dialog.skip_resolved(): self.playback_successful = False
-			elif self.sources_object.progress_dialog.iscanceled() or self.kodi_monitor.abortRequested():
-				self.sources_object.cancel_all_playback = True
-				self.sources_object._resolve_user_cancelled = True
-				self.playback_successful = False
-				self.safe_stop()
-				break
-			elif resolve_percent >= 100:
-				self.playback_successful = False
-				break
+			elif self.sources_object.progress_dialog.iscanceled() or self.kodi_monitor.abortRequested(): self.cancel_all_playback, self.playback_successful = True, False
+			elif resolve_percent >= 100: self.playback_successful = False
 			elif ku.get_visibility('Window.IsTopMost(okdialog)'):
 				ku.execute_builtin('SendClick(okdialog, 11)')
 				self.playback_successful = False
 			elif self.isPlayingVideo():
-				if self._resolve_cancelled():
-					self.sources_object.cancel_all_playback = True
-					self.sources_object._resolve_user_cancelled = True
-					self.playback_successful = False
-					self.safe_stop()
-					break
 				try:
 					if self.getTotalTime() not in ('0.0', '', 0.0, None) and ku.get_visibility('Window.IsActive(fullscreenvideo)'): self.playback_successful = True
 				except: pass
-			resolve_percent = round(resolve_percent + 0.26, 1)
-			try:
-				if self.sources_object.progress_dialog:
-					self.sources_object.progress_dialog.update_resolver(percent=resolve_percent)
-			except: pass
+			resolve_percent = round(resolve_percent + 26.0/100, 1)
+			self.sources_object.progress_dialog.update_resolver(percent=resolve_percent)
 			ku.sleep(50)
 
 	def playback_close_dialogs(self):
@@ -170,7 +76,7 @@ class FinderPlayer(xbmc.Player):
 				total_check_time += 0.10
 			ku.hide_busy_dialog()
 			ku.sleep(1000)
-			if st.auto_enable_subs() and not st.submaker_enabled(): self.showSubtitles(True)
+			if st.auto_enable_subs(): self.showSubtitles(True)
 			while self.isPlayingVideo():
 				try:
 					if not ensure_dialog_dead:
@@ -191,10 +97,10 @@ class FinderPlayer(xbmc.Player):
 						final_chapter = (self.final_chapter(75) or stingers_percentage_fallback) if stinger_use_chapters else stingers_percentage_fallback
 						if self.current_point >= final_chapter: self.run_movie_stingers()
 				except: pass
-				if not self.subs_searched: self.run_subtitles()
 			ku.hide_busy_dialog()
 			if not self.media_marked: self.media_watched_marker()
-			self.clear_playback_properties(clear_navigation=False)
+			self.clear_playback_properties()
+			self.clear_playing_item()
 		except:
 			ku.hide_busy_dialog()
 			self.sources_object.playback_successful = False
@@ -208,26 +114,7 @@ class FinderPlayer(xbmc.Player):
 		if self.is_generic:
 			info_tag = listitem.getVideoInfoTag(True)
 			info_tag.setMediaType('video')
-			play_name = ku.get_property('finder.tb.play_filename') or self.url
-			info_tag.setFilenameAndPath(play_name)
-			info_tag.setTitle(os.path.basename(play_name) if play_name else '')
-			mime = ku.get_property('finder.tb.play_mime')
-			if not mime:
-				path_lower = (play_name or self.url or '').lower().split('|')[0].split('?')[0]
-				for ext, mt in (
-					('.m2ts', 'video/mp2t'), ('.mts', 'video/mp2t'), ('.ts', 'video/mp2t'),
-					('.mkv', 'video/x-matroska'), ('.mp4', 'video/mp4'), ('.avi', 'video/x-msvideo'),
-					('.mov', 'video/quicktime'), ('.webm', 'video/webm'),
-				):
-					if path_lower.endswith(ext):
-						mime = mt
-						break
-			if mime:
-				try:
-					listitem.setMimeType(mime)
-				except Exception:
-					pass
-			self._disable_kodi_url_resume(listitem)
+			info_tag.setFilenameAndPath(self.url)
 		else:
 			self.tmdb_id, self.imdb_id, self.tvdb_id = self.meta_get('tmdb_id', ''), self.meta_get('imdb_id', ''), self.meta_get('tvdb_id', '')
 			self.media_type, self.title, self.year = self.meta_get('media_type'), self.meta_get('title'), self.meta_get('year')
@@ -235,14 +122,13 @@ class FinderPlayer(xbmc.Player):
 			poster = self.meta_get('poster') or ku.get_icon('box_office')
 			fanart = self.meta_get('fanart') or ku.get_addon_fanart()
 			clearlogo = self.meta_get('clearlogo') or ''
-			duration, genre, trailer, mpaa = self.meta_get('duration'), self.meta_get('genre', ''), self.meta_get('trailer'), self.meta_get('mpaa')
+			duration, plot, genre, trailer, mpaa = self.meta_get('duration'), self.meta_get('plot'), self.meta_get('genre', ''), self.meta_get('trailer'), self.meta_get('mpaa')
 			rating, votes = self.meta_get('rating'), self.meta_get('votes')
 			premiered, studio, tagline = self.meta_get('premiered'), self.meta_get('studio', ''), self.meta_get('tagline')
 			director, writer, country = self.meta_get('director', ''), self.meta_get('writer', ''), self.meta_get('country', '')
 			cast = self.meta_get('short_cast', []) or self.meta_get('cast', []) or []
 			listitem.setLabel(self.title)
 			if self.media_type == 'movie':
-				plot = self.meta_get('plot')
 				listitem.setArt({'poster': poster, 'fanart': fanart, 'icon': poster, 'clearlogo': clearlogo})
 				info_tag = listitem.getVideoInfoTag(True)
 				info_tag.setMediaType('movie'), info_tag.setTitle(self.title), info_tag.setOriginalTitle(self.meta_get('original_title')), info_tag.setPlot(plot)
@@ -252,8 +138,6 @@ class FinderPlayer(xbmc.Player):
 				info_tag.setWriters(writer), info_tag.setDirectors(director), info_tag.setUniqueIDs({'imdb': self.imdb_id, 'tmdb': str(self.tmdb_id)})
 				info_tag.setCast([ku.kodi_actor()(name=item['name'], role=item['role'], thumbnail=item['thumbnail']) for item in cast])
 			else:
-				if st.avoid_episode_spoilers() and int(self.meta_get('playcount', '0')) == 0: plot = self.meta_get('tvshow_plot') or '* Hidden to Prevent Spoilers *'
-				else: plot = self.meta_get('plot') or self.meta_get('tvshow_plot')
 				listitem.setArt({'poster': poster, 'fanart': fanart, 'icon': poster, 'clearlogo': clearlogo, 'tvshow.poster': poster, 'tvshow.clearlogo': clearlogo})
 				info_tag = listitem.getVideoInfoTag(True)
 				info_tag.setMediaType('episode'), info_tag.setTitle(self.meta_get('ep_name')), info_tag.setOriginalTitle(self.meta_get('original_title'))
@@ -265,8 +149,6 @@ class FinderPlayer(xbmc.Player):
 				info_tag.setCast([ku.kodi_actor()(name=item['name'], role=item['role'], thumbnail=item['thumbnail']) for item in cast])
 				info_tag.setFilenameAndPath(self.url)
 			self.set_resume_point(listitem)
-			if self.url and str(self.url).startswith('http'):
-				self._disable_kodi_url_resume(listitem, keep_start_percent=True)
 			self.set_playback_properties()
 		return listitem
 
@@ -316,32 +198,19 @@ class FinderPlayer(xbmc.Player):
 	def set_resume_point(self, listitem):
 		if self.playback_percent > 0.0: listitem.setProperty('StartPercent', str(self.playback_percent))
 
-	def _disable_kodi_url_resume(self, listitem, keep_start_percent=False):
-		# Kodi stores resume by stream URL/filename; debrid links reuse the same name and can reopen near EOF.
-		if not keep_start_percent or float(listitem.getProperty('StartPercent') or 0) <= 0:
-			listitem.setProperty('StartPercent', '0')
-		listitem.setProperty('StartOffset', '0')
-		try:
-			listitem.getVideoInfoTag(True).setResumePoint(0.0)
-		except:
-			pass
-
 	def info_next_ep(self):
 		self.nextep_info_gathered = True
-		play_type = 'autoplay_nextep' if self.autoplay_nextep else 'autoscrape_nextep'
-		nextep_settings = st.auto_nextep_settings(play_type)
-		watching_check = nextep_settings['watching_check']
-		still_watching_check = 15 if self.meta_get('watch_count') == watching_check else 0
-		final_chapter = self.final_chapter(90) if nextep_settings['use_chapters'] else None
-		percentage = 100 - final_chapter if final_chapter else nextep_settings['window_percentage']
 		try:
-			window_time = round((percentage/100) * self.total_time) + still_watching_check
-		except:
-			window_time = nextep_settings['window_percentage'] + still_watching_check
-		use_window = nextep_settings['alert_method'] == 0
-		default_action = nextep_settings['default_action']
-		self.start_prep = nextep_settings['scraper_time'] + window_time
-		self.nextep_settings = {'use_window': use_window, 'window_time': window_time, 'default_action': default_action, 'play_type': play_type, 'watching_check': watching_check}
+			play_type = 'autoplay_nextep' if self.autoplay_nextep else 'autoscrape_nextep'
+			nextep_settings = st.auto_nextep_settings(play_type)
+			final_chapter = self.final_chapter(90) if nextep_settings['use_chapters'] else None
+			percentage = 100 - final_chapter if final_chapter else nextep_settings['window_percentage']
+			window_time = round((percentage/100) * self.total_time)
+			use_window = nextep_settings['alert_method'] == 0
+			default_action = nextep_settings['default_action']
+			self.start_prep = nextep_settings['scraper_time'] + window_time
+			self.nextep_settings = {'use_window': use_window, 'window_time': window_time, 'default_action': default_action, 'play_type': play_type}
+		except: pass
 
 	def final_chapter(self, threshhold):
 		try:
@@ -351,39 +220,20 @@ class FinderPlayer(xbmc.Player):
 		return None
 
 	def kill_dialog(self):
-		try:
-			self.sources_object._kill_progress_dialog()
-		except:
-			if not getattr(self.sources_object, '_resolve_user_cancelled', False):
-				ku.close_all_dialog()
+		try: self.sources_object._kill_progress_dialog()
+		except: ku.close_all_dialog()
 
 	def set_constants(self, url, obj):
 		self.url = url
 		self.sources_object = obj
 		self.is_generic = self.sources_object == 'video'
-		self.kodi_monitor = ku.kodi_monitor()
-		self.playback_successful = None
-		self.cancel_all_playback = False
 		if not self.is_generic:
 			self.meta = self.sources_object.meta
-			self.meta_get, self.playback_percent = self.meta.get, self.sources_object.playback_percent or 0.0
+			self.meta_get, self.kodi_monitor, self.playback_percent = self.meta.get, ku.kodi_monitor(), self.sources_object.playback_percent or 0.0
 			self.playing_filename = self.sources_object.playing_filename
 			self.media_marked, self.nextep_info_gathered, self.movie_stingers_run = False, False, False
-			self.subs_searched = False
+			self.playback_successful, self.cancel_all_playback = None, False
 			self.playing_item = self.sources_object.playing_item
-
-	def run_subtitles(self):
-		self.subs_searched = True
-		if not st.auto_enable_subs(): return
-		if not st.submaker_enabled(): return
-		if not self.imdb_id: return
-		try:
-			from indexers.subtitles import Subtitles
-			poster = self.meta.get('poster') or ku.get_icon('box_office')
-			season = self.season if self.media_type == 'episode' else None
-			episode = self.episode if self.media_type == 'episode' else None
-			Thread(target=Subtitles().run, args=(self.imdb_id, season, episode, poster)).start()
-		except: pass
 
 	def set_playback_properties(self):
 		try:
@@ -393,71 +243,21 @@ class FinderPlayer(xbmc.Player):
 			if self.playing_filename: ku.set_property('subs.player_filename', self.playing_filename)
 		except: pass
 
-	def safe_stop(self):
-		try:
-			if ku.get_property(PROP_PLAY_OPENING) == 'true' or (self.isPlaying() and not self.isPlayingVideo()):
-				for _ in range(80):
-					try:
-						if self.isPlayingVideo():
-							ku.sleep(300)
-							break
-					except:
-						pass
-					ku.sleep(100)
-				else:
-					ku.sleep(400)
-			ku.execute_builtin('PlayerControl(Stop)', block=True)
-			stable_idle = 0
-			for _ in range(80):
-				playing = False
-				try:
-					playing = self.isPlaying() or self.isPlayingVideo()
-				except:
-					pass
-				if playing:
-					stable_idle = 0
-					try:
-						self.stop()
-					except:
-						pass
-					ku.execute_builtin('PlayerControl(Stop)', block=False)
-				else:
-					stable_idle += 1
-					if stable_idle >= 6:
-						ku.sleep(400)
-						return
-				ku.sleep(100)
-		except:
-			pass
-		finally:
-			ku.clear_property(PROP_PLAY_OPENING)
-
-	def clear_playback_properties(self, clear_navigation=True):
-		if clear_navigation:
-			ku.clear_property('finder.window_stack')
+	def clear_playback_properties(self):
+		ku.clear_property('finder.window_stack')
 		ku.clear_property('script.trakt.ids')
 		ku.clear_property('subs.player_filename')
 
-	def run_error(self, message=None):
-		ku.clear_property(PROP_PLAY_OPENING)
-		try:
-			if not self.is_generic:
-				self.sources_object.playback_successful = False
-		except:
-			pass
+	def clear_playing_item(self):
+		if self.playing_item['cache_provider'] == 'Offcloud':
+			if self.playing_item.get('direct_debrid_link', False): return
+			if st.store_resolved_to_cloud('Offcloud', 'package' in self.playing_item): return
+			from apis.offcloud_api import Offcloud
+			Offcloud.clear_played_torrent(self.playing_item)
+
+	def run_error(self):
+		try: self.sources_object.playback_successful = False
+		except: pass
 		self.clear_playback_properties()
-		text = message or 'This link could not be played. It may be expired, removed, or unsupported on this device.'
-		try:
-			if not self.is_generic and getattr(self, 'sources_object', None):
-				return self.sources_object._show_playback_failed_dialog(text)
-		except:
-			pass
-		ku.hide_busy_dialog()
-		ku.sleep(400)
-		try:
-			return ku.kodi_dialog().ok('Playback failed', text)
-		except Exception:
-			try:
-				return ku.ok_dialog(heading='Playback failed', text=text)
-			except Exception:
-				return ku.notification('Playback Failed', 4000, settle_ms=400)
+		ku.notification('Playback Failed', 3500)
+		return False

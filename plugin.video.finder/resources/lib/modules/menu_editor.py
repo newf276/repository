@@ -140,11 +140,11 @@ class MenuEditor:
 	def shortcut_folder_convert(self):
 		list_items = navigator_cache.get_shortcut_folder_contents(self.name)
 		valid_random_items = [i for i in list_items if i.get('mode').replace('random.', '') in kodi_utils.random_valid_type_check()]
-		make_random = '[COLOR dodgerblue][RANDOM][/COLOR]' not in self.name
+		make_random = '[COLOR red][RANDOM][/COLOR]' not in self.name
 		if make_random:
 			if not valid_random_items: return kodi_utils.notification('No random supported items in this list', 5000)
-			new_folder_name = self.name + ' [COLOR dodgerblue][RANDOM][/COLOR]'
-		else: new_folder_name = self.name.replace(' [COLOR dodgerblue][RANDOM][/COLOR]', '')
+			new_folder_name = self.name + ' [COLOR red][RANDOM][/COLOR]'
+		else: new_folder_name = self.name.replace(' [COLOR red][RANDOM][/COLOR]', '')
 		self._db_execute('delete', self.name, list_type='shortcut_folder', refresh=False)
 		self._db_execute('make_new_shortcut_folder', new_folder_name, list_items)
 
@@ -208,7 +208,7 @@ class MenuEditor:
 
 	def _icon_select(self, default_icon=''):
 		if default_icon.startswith('http') or 'plugin.video.finder' in default_icon: return default_icon
-		all_icons = kodi_utils.get_all_icons()
+		all_icons = kodi_utils.get_all_icon_vars()
 		if default_icon:
 			try:
 				all_icons.remove(default_icon)
@@ -268,12 +268,11 @@ class MenuEditor:
 		return dict(parse_qsl(path.replace('plugin://plugin.video.finder/?','')))
 
 	def _get_icon_var(self, icon_path):
-		import os
 		try:
-			all_icons = kodi_utils.get_all_icons()
+			all_icons = kodi_utils.get_all_icon_vars()
 			icon_value = unquote(icon_path)
-			icon_value = path = os.path.basename(os.path.normpath(icon_value))
-			icon_value = icon_value.replace('.png/', '').replace('.png', '')
+			icon_value = icon_value.replace('image://', '').replace('.png/', '').replace('.png', '')
+			icon_value = icon_value.split(kodi_utils.translate_path('special://home/addons/plugin.video.finder/resources/media/icons/'))[1]
 			icon_var = [i for i in all_icons if i == icon_value][0]
 		except: icon_var = 'folder'
 		return icon_var

@@ -10,15 +10,7 @@ class ListsCache(BaseCache):
 	def delete_all_lists(self):
 		try:
 			dbcon = self.manual_connect('lists_db')
-			dbcon.execute('DELETE FROM lists WHERE id NOT LIKE %s' % "'ai_%'")
-			dbcon.execute('VACUUM')
-			return True
-		except: return False
-
-	def delete_all_ai_lists(self):
-		try:
-			dbcon = self.manual_connect('lists_db')
-			dbcon.execute('DELETE FROM lists WHERE id LIKE %s' % "'ai_%'")
+			dbcon.execute('DELETE FROM lists')
 			dbcon.execute('VACUUM')
 			return True
 		except: return False
@@ -40,8 +32,7 @@ def lists_cache_object(function, string, args, json=False, expiration=None):
 	else: args = (args,)
 	if json: result = function(*args).json()
 	else: result = function(*args)
-	if result is None: return result
-	if result in ([], {}, '[]', '{}', ''): expiration = 0.3
+	if result in ([], {}, '[]', '{}', '', None): expiration = 0.3
 	else: expiration = expiration or lists_cache_duraton()
 	lists_cache.set(string, result, expiration=expiration)
 	return result

@@ -6,24 +6,25 @@ import random
 import _strptime
 import unicodedata
 from html import unescape
-from queue import SimpleQueue
-from threading import Thread, activeCount
+from queue import Queue, Empty
+from threading import Thread, active_count
 from importlib import import_module
 from datetime import datetime, timedelta, date
 from modules.settings import max_threads
-from modules.kodi_utils import sleep, logger
+from modules.kodi_utils import sleep
+# from modules.kodi_utils import logger
 
 class TaskPool:
 	def __init__(self):
-		self._queue = SimpleQueue()
+		self._queue = Queue()
 
 	def _thread_target(self, queue, target):
-		while not queue.empty():
-			try: target(*queue.get())
-			except Exception as e: logger('thread queue error', str(e))
+		while True:
+			try: target(*queue.get(block=False))
+			except Empty: break
+			except: pass
 
 	def tasks(self, _target, _list, _max_size=60):
-		if not isinstance(_list[0], tuple): _list = [(i,) for i in _list]
 		[self._queue.put(tag) for tag in _list]
 		threads = [Thread(target=self._thread_target, args=(self._queue, _target)) for i in range(_max_size)]
 		[i.start() for i in threads]
@@ -38,7 +39,7 @@ class TaskPool:
 def make_thread_list(_target, _list):
 	_max_threads = max_threads()
 	for item in _list:
-		while activeCount() > _max_threads: sleep(1)
+		while active_count() > _max_threads: sleep(1)
 		threaded_object = Thread(target=_target, args=(item,))
 		threaded_object.start()
 		yield threaded_object
@@ -46,7 +47,7 @@ def make_thread_list(_target, _list):
 def make_thread_list_enumerate(_target, _list):
 	_max_threads = max_threads()
 	for count, item in enumerate(_list):
-		while activeCount() > _max_threads: sleep(1)
+		while active_count() > _max_threads: sleep(1)
 		threaded_object = Thread(target=_target, args=(count, item))
 		threaded_object.start()
 		yield threaded_object
@@ -333,55 +334,48 @@ def unzip(zip_location, destination_location, destination_check, show_busy=True)
 
 def make_qrcode(url):
 	if url == None: return
-	import segno
-	from hashlib import sha1
+	import segno, hashlib
 	from os import path
 	from modules.kodi_utils import addon_profile
 	try:
-		qr_id = sha1(url.encode('utf-8')).hexdigest()[:12]
-		art_path = path.join(addon_profile(), 'qr_%s.png' % qr_id)
+		url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()[:8]
+		art_path = path.join(addon_profile(), 'qr_%s.png' % url_hash)
 		qrcode = segno.make(url, micro=False)
 		qrcode.save(art_path, scale=20)
 	except: return
 	return art_path
 
 def make_tinyurl(url):
-	if not url:
-		return ''
 	import requests
+	short_url = ''
 	try:
-		response = requests.get('https://tinyurl.com/api-create.php', params={'url': url}, timeout=15)
-		if response.status_code != 200:
-			return ''
-		short_url = (response.text or '').strip()
-		if short_url.lower().startswith('http'):
-			return short_url
-	except Exception:
-		pass
-	return ''
+		tiny_url = 'http://tinyurl.com/api-create.php'
+		response = requests.get(tiny_url, params={'url': url})
+		status = response.status_code
+		if status == 200:
+			short_url = response.text
+		else: pass
+	except: pass
+	return short_url
 
 def copy2clip(txt):
-	if not txt: return
 	if sys.platform == "win32":
 		try:
-			from subprocess import Popen, PIPE
-			p = Popen(['clip'], stdin=PIPE)
-			p.communicate(input=txt.strip().encode('utf-8'))
-			return p.returncode
+			from subprocess import check_call
+			cmd = 'echo ' + txt.replace('&', '^&').strip() + '|clip'
+			return check_call(cmd, shell=True)
 		except: return
 	if sys.platform == "darwin":
 		try:
-			from subprocess import Popen, PIPE
-			p = Popen(['pbcopy'], stdin=PIPE)
-			p.communicate(input=txt.strip().encode('utf-8'))
-			return p.returncode
+			from subprocess import check_call
+			cmd = 'echo ' + txt.strip() + '|pbcopy'
+			return check_call(cmd, shell=True)
 		except: return
 	if sys.platform == "linux":
 		try:
 			from subprocess import Popen, PIPE
 			p = Popen(['xsel', '-pi'], stdin=PIPE)
-			p.communicate(input=txt.strip().encode('utf-8'))
-			return p.returncode
+			p.communicate(input=txt)
 		except: return
 
 def image_from_db(image_url, delete=True):

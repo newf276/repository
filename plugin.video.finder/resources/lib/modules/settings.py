@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-from caches.settings_cache import get_setting, set_setting, default_setting_values, _EXTRAS_LIST_DEFAULT
-from modules.kodi_utils import translate_path, get_property, addon_profile
-from modules.kodi_utils import logger
+from caches.settings_cache import get_setting, set_setting, default_setting_values
+from modules.kodi_utils import translate_path, get_property
+# from modules.kodi_utils import logger
 
 def tmdb_api_key():
 	return get_setting('finder.tmdb_api', '')
-
-def tmdb_lists_read_token():
-	return get_setting('finder.tmdb.lists_read_token', '')
 
 def trakt_client():
 	return get_setting('finder.trakt.client', '')
@@ -43,7 +40,7 @@ def authorized_debrid_check(debrid_service):
 	return True
 
 def playback_key():
-	return 'media'
+	return get_setting('finder.playback_key', '0')
 
 def playback_settings():
 	return (int(get_setting('finder.playback.watched_percent', '90')), int(get_setting('finder.playback.resume_percent', '5')))
@@ -62,17 +59,6 @@ def download_directory(media_type):
 								'image_url': 'finder.image_download_directory','image': 'finder.image_download_directory', 'premium': 'finder.premium_download_directory',
 								None: 'finder.premium_download_directory', 'None': False}
 	return translate_path(get_setting(download_directories_dict[media_type]))
-
-def import_export_directory():
-	path = get_setting('finder.import_export_directory', '')
-	if path in ('', 'None', None):
-		return translate_path(addon_profile())
-	return translate_path(path)
-
-def ai_model_active():
-	if get_setting('finder.google_api', 'empty_setting') not in (None, 'None', '', 'empty_setting'): return True
-	if get_setting('finder.groq_api', 'empty_setting') not in (None, 'None', '', 'empty_setting'): return True
-	return False
 
 def ai_model_order():
 	return get_setting('finder.ai_model.order', 'gemini-2.5-flash-lite,llama-3.3-70b-versatile,gemma-3-27b-it,llama-3.1-8b-instant').split(',')
@@ -127,22 +113,6 @@ def include_prerelease_results():
 def auto_enable_subs():
 	return get_setting('finder.playback.auto_enable_subs', 'false') == 'true'
 
-def subtitles_source():
-	return get_setting('finder.playback.subs_source', '0')
-
-def submaker_enabled():
-	return subtitles_source() == '1'
-
-def submaker_manifest():
-	manifest = get_setting('finder.playback.submaker_manifest', 'empty_setting')
-	return '' if manifest == 'empty_setting' else manifest
-
-def submaker_language():
-	return get_setting('finder.playback.submaker_language_name', 'English')
-
-def submaker_prefer_local():
-	return get_setting('finder.playback.submaker_prefer_local', 'true') == 'true'
-
 def stingers_show():
 	return get_setting('finder.stinger_alert.show', 'false') == 'true'
 
@@ -166,24 +136,31 @@ def autoscrape_next_episode():
 	if not auto_play('episode') and get_setting('finder.autoscrape_next_episode', 'false') == 'true': return True
 	else: return False
 
-def autoscrape_confirm():
-	return get_setting('finder.autoscrape_confirm', 'false') == 'true'
+def auto_rescrape_cache_ignored():
+	return int(get_setting('finder.results.auto_rescrape_cache_ignored', '1'))
+
+def auto_rescrape_imdb_year():
+	return int(get_setting('finder.results.auto_rescrape_imdb_year', '0'))
+
+def auto_rescrape_with_all():
+	return int(get_setting('finder.results.auto_rescrape_with_all', '0'))
 
 def autoplay_prescrape(scrape_provider):
 	return get_setting('finder.autoplay.%s' % scrape_provider, 'false') == 'true'
+
+def auto_episode_group():
+	return int(get_setting('finder.results.auto_episode_group', '0'))
 
 def auto_nextep_settings(play_type):
 	play_type = 'autoplay' if play_type == 'autoplay_nextep' else 'autoscrape'
 	window_percentage = 100 - int(get_setting('finder.%s_next_window_percentage' % play_type, '95'))
 	use_chapters = get_setting('finder.%s_use_chapters' % play_type, 'true') == 'true'
-	watching_check = int(get_setting('finder.autoplay_watching_check', '3'))
 	scraper_time = int(get_setting('finder.results.timeout', '60')) + 20
 	if play_type == 'autoplay':
 		alert_method = int(get_setting('finder.autoplay_alert_method', '0'))
 		default_action = {'0': 'play', '1': 'cancel', '2': 'pause'}[get_setting('finder.autoplay_default_action', '1')]
 	else: alert_method, default_action = '', ''
-	return {'scraper_time': scraper_time, 'window_percentage': window_percentage, 'alert_method': alert_method,
-			'default_action': default_action, 'use_chapters': use_chapters, 'watching_check': watching_check}
+	return {'scraper_time': scraper_time, 'window_percentage': window_percentage, 'alert_method': alert_method, 'default_action': default_action, 'use_chapters': use_chapters}
 
 def filter_status(filter_type):
 	return int(get_setting('finder.filter.%s' % filter_type, '0'))
@@ -194,6 +171,9 @@ def limit_number_quality():
 def limit_number_total():
 	return int(get_setting('finder.results.limit_number_total', '0'))
 
+def ignore_results_filter():
+	return int(get_setting('finder.results.ignore_filter', '0'))
+
 def trakt_sync_interval():
 	setting = get_setting('finder.trakt.sync_interval', '60')
 	interval = int(setting) * 60
@@ -201,10 +181,6 @@ def trakt_sync_interval():
 
 def lists_sort_order(setting):
 	return int(get_setting('finder.sort.%s' % setting, '0'))
-
-def tmdblists_sort_order(setting):
-	if setting == 'recommendations': return None
-	return str(get_setting('finder.tmdbsort.%s' % setting, '4'))
 
 def personal_lists_sort_unseen_to_top():
 	return get_setting('finder.personal_list.sort_unseen_to_top') == 'true'
@@ -239,9 +215,6 @@ def easynews_playback_method(query):
 	setting = queries[query]()
 	return setting
 
-def easynews_playback_method_retries():
-	return int(get_setting('finder.easynews.playback_method_retries', '1')) + 1
-
 def easynews_authorized():
 	easynews_user = get_setting('finder.easynews_user', 'empty_setting')
 	easynews_password = get_setting('finder.easynews_password', 'empty_setting')
@@ -249,41 +222,17 @@ def easynews_authorized():
 	else: easynews_status = True
 	return easynews_status
 
-def aiostreams_authorized():
-	username = get_setting('finder.aiostreams.username', 'empty_setting')
-	password = get_setting('finder.aiostreams.password', 'empty_setting')
-	if username in ('empty_setting', '') or password in ('empty_setting', ''): return False
-	return True
-
-def aiostreams_active():
-	from apis.aiostreams_api import ENABLED
-	if not ENABLED: return False
-	if get_setting('finder.provider.aiostreams', 'false') == 'true': return aiostreams_authorized()
-	return False
-
 def extras_enable_extra_ratings():
 	return get_setting('finder.extras.enable_extra_ratings', 'true') == 'true'
 
-def extras_enabled_ratings():
-	return get_setting('finder.extras.enabled_ratings', 'Meta, Tom/Critic, Tom/User, IMDb, TMDb').split(', ')
-
-def extras_enable_item_ratings():
-	return get_setting('finder.extras.enable_item_ratings', 'false') =='true'
-
 def extras_enable_scrollbars():
-	return get_setting('finder.extras.enable_scrollbars', 'false')
+	return get_setting('finder.extras.enable_scrollbars', 'true')
 
-def extras_enabled():
+def extras_enabled_menus():
 	setting = get_setting('finder.extras.enabled', '2000,2050,2051,2052,2053,2054,2055,2056,2057,2058,2059,2060,2061,2062')
 	if setting in ('', None, 'noop', []): return []
 	split_setting = setting.split(',')
 	return [int(i) for i in split_setting]
-
-def extras_order():
-	setting = get_setting('finder.extras.order', _EXTRAS_LIST_DEFAULT)
-	if setting in ('', None, 'noop', []): return []
-	split_setting = setting.split(',')
-	return [int(i) for i in split_setting if i.strip()]
 
 def recommend_service():
 	return int(get_setting('finder.recommend_service', '0'))
@@ -295,96 +244,27 @@ def tv_progress_location():
 	return int(get_setting('finder.tv_progress_location', '0'))
 
 def check_prescrape_sources(scraper, media_type):
-	if scraper in ('easynews', 'aiostreams', 'rd_cloud', 'pm_cloud', 'ad_cloud', 'oc_cloud', 'tb_cloud', 'folders'):
-		return get_setting('finder.check.%s' % scraper) == 'true'
-	if get_setting('finder.check.%s' % scraper) == 'true' and auto_play(media_type):
-		return True
-	return False
-
-def prescrape_enabled(media_type, active_scrapers=None):
-	if active_scrapers is None:
-		active_scrapers = active_internal_scrapers()
-	return any(check_prescrape_sources(scraper, media_type) for scraper in active_scrapers)
-
-def cloud_scrape_before_external(scraper):
-	"""Run debrid cloud scrapers before external torrent scrapers when the provider is enabled."""
-	cloud_scrapers = {
-		'rd_cloud': 'provider.rd_cloud',
-		'pm_cloud': 'provider.pm_cloud',
-		'ad_cloud': 'provider.ad_cloud',
-		'oc_cloud': 'provider.oc_cloud',
-		'tb_cloud': 'provider.tb_cloud',
-	}
-	if scraper in cloud_scrapers:
-		return get_setting('finder.%s' % cloud_scrapers[scraper]) == 'true'
-	return False
+	if scraper in ('easynews', 'rd_cloud', 'pm_cloud', 'ad_cloud', 'oc_cloud', 'tb_cloud', 'folders'): return get_setting('finder.check.%s' % scraper) == 'true'
+	if get_setting('finder.check.%s' % scraper) == 'true' and auto_play(media_type): return True
+	else: return False
 
 def external_scraper_info():
 	module = get_setting('finder.external_scraper.module')
 	if module in ('empty_setting', ''): return None, ''
 	return module, module.split('.')[-1]
 
+def external_filter_sources():
+	return get_setting('finder.external.filter_sources', 'true') == 'true'
+
 def filter_by_name(scraper):
 	if get_property('fs_filterless_search') == 'true': return False
 	return get_setting('finder.%s.title_filter' % scraper, 'false') == 'true'
-
-def uncached_min_seeders():
-	return int(get_setting('finder.results.uncached_min_seeders', '0'))
-
-_DEBRID_CACHE_CHECK_SETTINGS = {
-	'Real-Debrid': 'rd.cache_check',
-	'TorBox': 'tb.cache_check',
-	'Premiumize.me': 'pm.cache_check',
-	'Offcloud': 'oc.cache_check',
-	'AllDebrid': 'ad.cache_check',
-}
-
-def debrid_cache_check(provider):
-	setting_id = _DEBRID_CACHE_CHECK_SETTINGS.get(provider)
-	if not setting_id: return False
-	return get_setting('finder.%s' % setting_id, 'false') == 'true'
-
-def any_external_cache_check():
-	for slug, provider in (('rd', 'Real-Debrid'), ('tb', 'TorBox'), ('pm', 'Premiumize.me'), ('oc', 'Offcloud'), ('ad', 'AllDebrid')):
-		if enabled_debrids_check(slug) and debrid_cache_check(provider):
-			return True
-	return False
-
-def include_uncached_torbox():
-	return get_setting('finder.tb.include_uncached', 'false') == 'true' and debrid_cache_check('TorBox')
-
-def include_uncached_offcloud():
-	return get_setting('finder.oc.include_uncached', 'false') == 'true' and debrid_cache_check('Offcloud')
-
-def include_uncached_premiumize():
-	return get_setting('finder.pm.include_uncached', 'false') == 'true' and debrid_cache_check('Premiumize.me')
-
-def tb_notify_cloud_ready():
-	return get_setting('finder.tb.notify_cloud_ready', 'true') == 'true'
-
-def oc_notify_cloud_ready():
-	return get_setting('finder.oc.notify_cloud_ready', 'true') == 'true'
 
 def easynews_language_filter():
 	enabled = get_setting('finder.easynews.filter_lang') == 'true'
 	if enabled: filters = get_setting('finder.easynews.lang_filters').split(', ')
 	else: filters = []
 	return enabled, filters
-
-def easynews_exclude_adult():
-	return get_setting('finder.easynews.exclude_adult', 'false') == 'true'
-
-def easynews_refresh_credentials():
-	return get_setting('finder.easynews.refresh_credentials', 'true') == 'true'
-
-def easynews_lang_include_unknown():
-	return get_setting('finder.easynews.lang_include_unknown', 'true') == 'true'
-
-def easynews_fallback_search():
-	return get_setting('finder.easynews.fallback_search', 'true') == 'true'
-
-def easynews_search_width():
-	return int(get_setting('finder.easynews.search_width', '0'))
 
 def size_sort_weighted():
 	return get_setting('finder.results.size_sort_weighted', 'false') == 'true'
@@ -406,21 +286,19 @@ def active_internal_scrapers():
 	for item in [('rd', 'provider.rd_cloud'), ('pm', 'provider.pm_cloud'), ('ad', 'provider.ad_cloud'), ('oc', 'provider.oc_cloud'), ('tb', 'provider.tb_cloud')]:
 		if enabled_debrids_check(item[0]): settings_append(item[1])
 	active = [i.split('.')[1] for i in settings if get_setting('finder.%s' % i) == 'true']
-	if aiostreams_active(): active.append('aiostreams')
 	return active
 
 def provider_sort_ranks():
 	fo_priority = int(get_setting('finder.folders.priority', '6'))
-	aio_priority = int(get_setting('finder.aio.priority', '7'))
 	en_priority = int(get_setting('finder.en.priority', '7'))
 	rd_priority = int(get_setting('finder.rd.priority', '8'))
 	ad_priority = int(get_setting('finder.ad.priority', '9'))
 	pm_priority = int(get_setting('finder.pm.priority', '10'))
 	oc_priority = int(get_setting('finder.oc.priority', '10'))
+	ed_priority = int(get_setting('finder.ed.priority', '10'))
 	tb_priority = int(get_setting('finder.tb.priority', '10'))
-	return {'easynews': en_priority, 'aiostreams': aio_priority, 'real-debrid': rd_priority, 'premiumize.me': pm_priority, 'alldebrid': ad_priority,
-	'offcloud': oc_priority, 'torbox': tb_priority, 'rd_cloud': rd_priority, 'pm_cloud': pm_priority, 'ad_cloud': ad_priority, 'oc_cloud': oc_priority,
-	'tb_cloud': tb_priority, 'folders': fo_priority}
+	return {'easynews': en_priority, 'real-debrid': rd_priority, 'premiumize.me': pm_priority, 'alldebrid': ad_priority, 'offcloud': oc_priority, 'easydebrid': ed_priority,
+	'torbox': tb_priority, 'rd_cloud': rd_priority, 'pm_cloud': pm_priority, 'ad_cloud': ad_priority, 'oc_cloud': oc_priority, 'tb_cloud': tb_priority, 'folders': fo_priority}
 
 def sort_to_top(provider):
 	sort_to_top_dict = {'folders': 'finder.results.sort_folders_first', 'rd_cloud': 'finder.results.sort_rdcloud_first', 'pm_cloud': 'finder.results.sort_pmcloud_first',
@@ -435,18 +313,18 @@ def scraping_settings():
 	if highlight_type == 2:
 		highlight = get_setting('finder.scraper_single_highlight', 'FF008EB2')
 		return {'highlight_type': 1, '4k': highlight, '1080p': highlight, '720p': highlight, 'sd': highlight}
-	easynews_highlight, aiostreams_highlight, debrid_cloud_highlight, folders_highlight = '', '', '', ''
-	rd_highlight, pm_highlight, ad_highlight, oc_highlight, tb_highlight = '', '', '', '', ''
+	easynews_highlight, debrid_cloud_highlight, folders_highlight = '', '', ''
+	rd_highlight, pm_highlight, ad_highlight, oc_highlight, ed_highlight, tb_highlight = '', '', '', '', '', ''
 	highlight_4K, highlight_1080P, highlight_720P, highlight_SD = '', '', '', ''
 	if highlight_type == 0:
 		easynews_highlight = get_setting('finder.provider.easynews_highlight', 'FF00B3B2')
-		aiostreams_highlight = get_setting('finder.provider.aiostreams_highlight', 'FF00D4FF')
 		debrid_cloud_highlight = get_setting('finder.provider.debrid_cloud_highlight', 'FF7A01CC')
 		folders_highlight = get_setting('finder.provider.folders_highlight', 'FFB36B00')
 		rd_highlight = get_setting('finder.provider.rd_highlight', 'FF3C9900')
-		pm_highlight = get_setting('finder.provider.pm_highlight', 'FFFF3300')
+		pm_highlight = get_setting('finder.provider.pm_highlight', 'FF8C8C8C')
 		ad_highlight = get_setting('finder.provider.ad_highlight', 'FFE6B800')
-		oc_highlight = get_setting('finder.provider.oc_highlight', 'FF5C6BC0')
+		oc_highlight = get_setting('finder.provider.oc_highlight', 'FF008EB2')
+		ed_highlight = get_setting('finder.provider.ed_highlight', 'FF3233FF')
 		tb_highlight = get_setting('finder.provider.tb_highlight', 'FF01662A')
 	else:
 		highlight_4K = get_setting('finder.scraper_4k_highlight', 'FFFF00FE')
@@ -454,12 +332,12 @@ def scraping_settings():
 		highlight_720P = get_setting('finder.scraper_720p_highlight', 'FF3C9900')
 		highlight_SD = get_setting('finder.scraper_SD_highlight', 'FF0166FF')
 	return {'highlight_type': highlight_type, 'real-debrid': rd_highlight, 'premiumize': pm_highlight, 'alldebrid': ad_highlight,
-			'offcloud': oc_highlight, 'torbox': tb_highlight, 'rd_cloud': debrid_cloud_highlight, 'pm_cloud': debrid_cloud_highlight, 'ad_cloud': debrid_cloud_highlight,
-			'oc_cloud': debrid_cloud_highlight, 'tb_cloud': debrid_cloud_highlight, 'easynews': easynews_highlight, 'aiostreams': aiostreams_highlight, 'folders': folders_highlight,
-			'4k': highlight_4K, '1080p': highlight_1080P, '720p': highlight_720P, 'sd': highlight_SD}
+			'offcloud': oc_highlight, 'easydebrid': ed_highlight, 'torbox': tb_highlight, 'rd_cloud': debrid_cloud_highlight,
+			'pm_cloud': debrid_cloud_highlight, 'ad_cloud': debrid_cloud_highlight, 'oc_cloud': debrid_cloud_highlight, 'tb_cloud': debrid_cloud_highlight,
+			'easynews': easynews_highlight, 'folders': folders_highlight, '4k': highlight_4K, '1080p': highlight_1080P, '720p': highlight_720P, 'sd': highlight_SD}
 
 def external_cache_check():
-	return any_external_cache_check()
+	return get_setting('finder.external.cache_check') == 'true'
 
 def omdb_api_key():
 	return get_setting('finder.omdb_api', 'empty_setting')
@@ -489,8 +367,14 @@ def calendar_sort_order():
 def ignore_articles():
 	return get_setting('finder.ignore_articles', 'false') == 'true'
 
-def jump_to_enabled():
-	return get_setting('finder.paginate.jump_to', 'true') == 'true'
+def trakt_lists_auto_load_az():
+	# Toggle: auto-load Trakt list contents A-Z (capped at trakt_lists_auto_load_max()).
+	return get_setting('finder.trakt.lists.auto_load_az', 'true') == 'true'
+
+def trakt_lists_auto_load_max():
+	try: return int(get_setting('finder.trakt.lists.auto_load_max', '1000'))
+	except: return 1000
+
 
 def date_offset():
 	return int(get_setting('finder.datetime.offset', '0')) + 5
@@ -538,46 +422,16 @@ def update_delay():
 def update_action():
 	return int(get_setting('finder.update.action', '2'))
 
-def _rescrape_defaults():
-	return [('cache_ignored', '1', '0'), ('imdb_year', '0', '1'), ('with_all', '0', '2'), ('episode_group', '0', '3'), ('ignore_filters', '0', '4'), ('full_scrape', '2', '5')]
-
-def rescrape_all_settings():
-	return sorted([(i[0], int(get_setting('finder.rescrape.%s' % i[0], i[1])), int(get_setting('finder.rescrape.%s.order' % i[0], i[2]))) \
-					for i in _rescrape_defaults()], key=lambda x: x[2])
-
-def rescrape_settings():
-	return [i for i in rescrape_all_settings() if i[1] in (1, 2)]
-
-def rescrape_action_value(action, default='0'):
-	return int(get_setting('finder.rescrape.%s' % action, default))
-
-def cm_enabled():
-	default = 'extras,options,playback_options,browse_movie_set,browse_seasons,browse_episodes,recommended,related,more_like_this,similar,in_trakt_list,' \
-				'trakt_manager,personal_manager,tmdb_manager,favorites_manager,mark_watched,unmark_previous_episode,exit,refresh,reload'
-	setting = get_setting('finder.context_menu.enabled', default)
-	if setting in ('', None, 'noop', '[]'): return default.split(',')
-	return setting.split(',')
-
-def cm_current_order():
-	default = 'extras,options,playback_options,browse_movie_set,browse_seasons,browse_episodes,recommended,related,more_like_this,similar,in_trakt_list,' \
-				'trakt_manager,personal_manager,tmdb_manager,favorites_manager,mark_watched,unmark_previous_episode,exit,refresh,reload'
-	setting = get_setting('finder.context_menu.order', default)
-	if setting in ('', None, 'noop', '[]'): return default.split(',')
-	return setting.split(',')
-
 def cm_sort_order():
-	try: setting = {i: c for c, i in enumerate([i for i in cm_current_order() if i in cm_enabled()])}
-	except: setting = cm_default_order()
-	return setting
+	try: return {i: c for c, i in enumerate(get_setting('finder.context_menu.order').split(','))}
+	except: return {i: c for c, i in enumerate(default_setting_values('context_menu.order')['setting_default'].split(','))}
 
 def cm_default_order():
 	return {i: c for c, i in enumerate(default_setting_values('context_menu.order')['setting_default'].split(','))}
 
-def rpdb_info(media_type):
-	if media_type == 'extras': active = extras_enable_item_ratings()
-	else: active = int(get_setting('finder.rpdb_enabled', '0')) in {'movie': (1, 3), 'tvshow': (2, 3)}[media_type]
-	if active: return {'rpdb_api_key': get_setting('finder.rpdb_api'), 'rpdb_format': get_setting('finder.rpdb_format')}
-	else: return {'rpdb_api_key': None, 'rpdb_format': None}
+def rpdb_api_key(media_type):
+	if int(get_setting('finder.rpdb_enabled', '0')) not in {'movie': (1, 3), 'tvshow': (2, 3)}[media_type]: return None
+	return get_setting('finder.rpdb_api')
 
 def use_season_name():
 	return get_setting('finder.use_season_name', 'false') == 'true'

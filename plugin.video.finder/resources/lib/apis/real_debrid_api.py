@@ -2,15 +2,13 @@
 import re
 import time
 import requests
-from threading import Thread, Semaphore
+from threading import Thread
 from caches.main_cache import cache_object
 from caches.settings_cache import get_setting, set_setting
 from modules.utils import copy2clip, make_tinyurl, make_qrcode
 from modules.source_utils import supported_video_extensions, seas_ep_filter, extras
 from modules.kodi_utils import sleep, ok_dialog, progress_dialog, notification
 # from modules.kodi_utils import logger
-
-_rd_magnet_semaphore = Semaphore(3)
 
 class RealDebridAPI:
 	def __init__(self):
@@ -36,10 +34,8 @@ class RealDebridAPI:
 		qr_code = make_qrcode(auth_url) or ''
 		short_url = make_tinyurl(auth_url)
 		copy2clip(auth_url)
-		if short_url:
-			p_dialog_insert = '[CR]Full link copied to clipboard[CR]OR visit: [B]%s[/B][CR]OR Enter this Code: [B]%s[/B]' % (short_url, user_code)
-		else:
-			p_dialog_insert = '[CR]Full link copied to clipboard[CR]OR Enter this Code: [B]%s[/B]' % user_code
+		if short_url: p_dialog_insert = 'OR visit this URL: [B]%s[/B][CR]OR Enter this Code: [B]%s[/B]' % (short_url, user_code)
+		else: p_dialog_insert = 'OR Enter this Code: [B]%s[/B]' % user_code
 		content = 'Please Scan the QR Code%s[CR]' % p_dialog_insert
 		progressDialog = progress_dialog('Real Debrid Authorize', qr_code)
 		progressDialog.update(content, 0)
@@ -137,18 +133,9 @@ class RealDebridAPI:
 		url = 'torrents?limit=500'
 		return self._get(url)
 
-	def downloads(self, fresh=False):
-		url = 'downloads?limit=500'
-		if fresh:
-			try:
-				from caches.base_cache import connect_database
-				dbcon = connect_database('maincache_db')
-				dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('rd_downloads',))
-			except:
-				pass
-			result = self._get(url)
-			return result if isinstance(result, list) else []
+	def downloads(self):
 		string = 'rd_downloads'
+		url = 'downloads?limit=500'
 		return cache_object(self._get, string, url, False, 0.03)
 
 	def user_cloud_info(self, file_id):
@@ -171,52 +158,24 @@ class RealDebridAPI:
 		try: return response['download']
 		except: return None
 
-	def rd_free_active_slot(self):
-		if get_setting('finder.rd.free_active_slot', 'false') != 'true':
-			return
-		try:
-			active_count = self.torrents_activeCount()
-			if not active_count or int(active_count.get('nb', 0)) < 5:
-				return
-			active_hashes = active_count.get('list') or []
-			if not active_hashes:
-				return
-			info_hash = active_hashes[0]
-			torrents = self.user_cloud_check()
-			if not isinstance(torrents, list):
-				return
-			matches = [i for i in torrents if i.get('hash') == info_hash]
-			if matches:
-				self.delete_torrent(matches[0]['id'])
-		except:
-			return
-
 	def add_magnet(self, magnet):
-		self.rd_free_active_slot()
 		post_data = {'magnet': magnet}
 		url = 'torrents/addMagnet'
 		result = self._post(url, post_data)
 		return result
 
 	def create_transfer(self, magnet_url):
-		with _rd_magnet_semaphore:
-			torrent_id = None
-			try:
-				torrent = self.add_magnet(magnet_url)
-				if not torrent or 'error' in torrent:
-					return 'no_url'
-				torrent_id = torrent['id']
-				info = self.torrent_info(torrent_id)
-				files = info.get('files') or []
-				if not files:
-					self.delete_torrent(torrent_id)
-					return 'no_url'
-				self.add_torrent_select(torrent_id, 'all')
-				return 'success'
-			except:
-				if torrent_id:
-					self.delete_torrent(torrent_id)
-				return 'failed'
+		try:
+			extensions = supported_video_extensions()
+			torrent = self.add_magnet(magnet_url)
+			torrent_id = torrent['id']
+			info = self.torrent_info(torrent_id)
+			files = info['files']
+			self.add_torrent_select(torrent_id, 'all')
+			return 'success'
+		except:
+			self.delete_torrent(torrent_id)
+			return 'failed'
 
 	def add_torrent_select(self, torrent_id, file_ids):
 		self.clear_cache(clear_hashes=False)
@@ -237,10 +196,6 @@ class RealDebridAPI:
 		return response
 
 	def resolve_magnet(self, magnet_url, info_hash, store_to_cloud, title, season, episode):
-		with _rd_magnet_semaphore:
-			return self._resolve_magnet(magnet_url, info_hash, store_to_cloud, title, season, episode)
-
-	def _resolve_magnet(self, magnet_url, info_hash, store_to_cloud, title, season, episode):
 		compare_title = re.sub(r'[^A-Za-z0-9]+', '.', title.replace('\'', '').replace('&', 'and').replace('%', '.percent')).lower()
 		attempts, transfer_finished = 0, False
 		extensions = supported_video_extensions()
@@ -250,17 +205,16 @@ class RealDebridAPI:
 			if 'error' in torrent: return None
 			torrent_id = torrent['id']
 			self.add_torrent_select(torrent_id, 'all')
-			sleep(1000)
 			torrent_info = self.user_cloud_info_check(torrent_id)
 			if not torrent_info['links'] or 'error' in torrent_info:
 				self.delete_torrent(torrent_id)
 				return None
-			sleep(1000)
-			while attempts <= 4 and not transfer_finished:
+			sleep(200)
+			while attempts < 3 and not transfer_finished:
 				active_count = self.torrents_activeCount()
 				active_list = active_count['list']
 				attempts += 1
-				if info_hash in active_list: sleep(1000)
+				if info_hash in active_list: sleep(500)
 				else: transfer_finished = True
 			if not transfer_finished:
 				self.delete_torrent(torrent_id)
@@ -305,28 +259,21 @@ class RealDebridAPI:
 			return None
 
 	def display_magnet_pack(self, magnet_url, info_hash):
-		with _rd_magnet_semaphore:
-			return self._display_magnet_pack(magnet_url, info_hash)
-
-	def _display_magnet_pack(self, magnet_url, info_hash):
 		try:
 			torrent_id = None
 			torrent = self.add_magnet(magnet_url)
-			if not torrent or 'error' in torrent:
-				return None
 			torrent_id = torrent['id']
 			self.add_torrent_select(torrent_id, 'all')
-			sleep(1000)
 			torrent_info = self.user_cloud_info_check(torrent_id)
 			if not torrent_info['links'] or 'error' in torrent_info:
 				self.delete_torrent(torrent_id)
 				return None
 			sleep(1000)
-			attempts, transfer_finished = 0, False
-			while attempts <= 4 and not transfer_finished:
+			elapsed_time, transfer_finished = 0, False
+			while elapsed_time <= 4 and not transfer_finished:
 				active_count = self.torrents_activeCount()
 				active_list = active_count['list']
-				attempts += 1
+				elapsed_time += 1
 				if info_hash in active_list: sleep(1000)
 				else: transfer_finished = True
 			if not transfer_finished:

@@ -11,7 +11,7 @@ from caches.tmdb_lists import tmdb_lists_cache
 from indexers.movies import Movies
 from indexers.tvshows import TVShows
 from modules.utils import paginate_list, sort_for_article, gen_md5, jsondate_to_datetime as js2date
-from modules.settings import paginate, page_limit, lists_sort_order, widget_hide_next_page, ignore_articles, jump_to_enabled, tmdblists_sort_order
+from modules.settings import paginate, page_limit, lists_sort_order, widget_hide_next_page, ignore_articles
 from modules import kodi_utils
 # logger = kodi_utils.logger
 
@@ -26,7 +26,7 @@ def get_tmdb_lists(params):
 		for item in data:
 			try:
 				list_name, list_id, item_count = item['name'], item['id'], item['number_of_items']
-				sort_order = sort_orders.get(list_id, 'None')
+				sort_order = sort_orders.get(list_id, '0')
 				updated_at = item['updated_at']
 				custom_poster = get_custom_image(list_name, 'poster', all_posters)
 				if custom_poster: poster = custom_poster
@@ -116,10 +116,8 @@ def build_tmdb_list(params):
 		user, slug, list_type = '', '', ''
 		paginate_enabled = paginate(is_external)
 		use_result = 'result' in params
-		list_name, list_id, media_type, sort_order = params.get('list_name'), params.get('list_id'), params.get('media_type'), params.get('sort_order')
+		list_name, list_id, sort_order, updated_at = params.get('list_name'), params.get('list_id'), params.get('sort_order'), params.get('updated_at')
 		page_no, paginate_start = int(params.get('new_page', '1')), int(params.get('paginate_start', '0'))
-		new_params = {'mode': 'tmdblist.build_tmdb_list', 'list_id': list_id, 'list_name': list_name, 'media_type': media_type,
-						'paginate_start': paginate_start, 'sort_order': sort_order}
 		if page_no == 1 and not is_external: kodi_utils.set_property('finder.exit_params', kodi_utils.folder_path())
 		if use_result: result = params.get('result', [])
 		else: result = get_tmdb_list(params)
@@ -137,12 +135,9 @@ def build_tmdb_list(params):
 		item_list.sort(key=lambda k: k[1])
 		if use_result: return content, [i[0] for i in item_list]
 		kodi_utils.add_items(handle, [i[0] for i in item_list])
-		if total_pages > 2 and jump_to_enabled() and not is_external:
-				kodi_utils.add_dir(handle, {'mode': 'navigate_to_page_choice', 'current_page': page_no, 'total_pages': total_pages, 'url_params': json.dumps(new_params)},
-											'Jump To...', 'item_jump', kodi_utils.get_icon('item_jump_landscape'), isFolder=False)
 		if total_pages > page_no and not hide_next_page:
 			new_page = str(page_no + 1)
-			new_params['new_page'] = new_page
+			new_params = {'mode': 'tmdblist.build_tmdb_list', 'list_id': list_id, 'paginate_start': paginate_start, 'new_page': new_page}
 			kodi_utils.add_dir(handle, new_params, 'Next Page (%s) >>' % new_page, 'nextpage', kodi_utils.get_icon('nextpage_landscape'))
 	except: pass
 	kodi_utils.set_content(handle, content)
@@ -234,50 +229,19 @@ def tmdb_image_maker(list_name, list_id, image_type, custom_image, shuffle_sort_
 	kodi_utils.hide_busy_dialog()
 	return final_image
 
-def _tmdb_media_type(media_type):
-	if media_type in ('movie', 'movies'): return 'movie'
-	return 'tv'
-
-def _tmdb_list_remove_succeeded(data):
-	if not data: return False
-	results = data.get('results')
-	if isinstance(results, list):
-		if not results: return False
-		return any(isinstance(i, dict) and i.get('success') for i in results)
-	return bool(data.get('success'))
-
-def add_remove_watchfavs(media_type, media_id, list_type, status):
-	media_type = _tmdb_media_type(media_type)
-	data = tmdb_list_api.add_remove_from_watchfavs(media_type, media_id, list_type, status)
-	if not data or not data.get('success'):
-		if not status: kodi_utils.notification(kodi_utils.LIST_ITEM_NOT_IN_LIST, 3000)
-		else: kodi_utils.notification('Error Adding to List', 3000)
-		return False
-	return True
-
 def add_to_tmdb_list(list_id, items):
 	data = tmdb_list_api.add_remove_from_list(list_id, items, 'post')
-	if not data or not data.get('success'):
+	if not data.get('success'):
 		kodi_utils.notification('Error Adding to List')
 		return False
 	return True
 
 def remove_from_tmdb_list(list_id, items):
-	try:
-		payload = {'items': []}
-		for item in items.get('items', []):
-			if not isinstance(item, dict): continue
-			payload['items'].append({'media_type': _tmdb_media_type(item.get('media_type', '')), 'media_id': int(item.get('media_id'))})
-		if not payload['items']: raise ValueError('no_items')
-		data = tmdb_list_api.add_remove_from_list(list_id, payload, 'delete')
-		if not _tmdb_list_remove_succeeded(data):
-			kodi_utils.notification(kodi_utils.LIST_ITEM_NOT_IN_LIST, 3000, settle_ms=300)
-			return False
-		kodi_utils.notification('Success', 3000, settle_ms=300)
-		return True
-	except:
-		kodi_utils.notification(kodi_utils.LIST_ITEM_NOT_IN_LIST, 3000, settle_ms=300)
+	data = tmdb_list_api.add_remove_from_list(list_id, items, 'delete')
+	if not data.get('success'):
+		kodi_utils.notification('Error Removing from List')
 		return False
+	return True
 
 def rename_tmdb_list(current_name, list_id):
 	list_name = kodi_utils.kodi_dialog().input('Please Choose a Name for the New List', defaultt=current_name)
@@ -286,7 +250,7 @@ def rename_tmdb_list(current_name, list_id):
 	return list_name
 
 def sort_order_tmdb_list():
-	choices = [('Title (asc)', '0'), ('Release Date (asc)', '1'), ('Release Date (desc)', '2'), ('Shuffle', '3'), ('Default From TMDb (None)', 'None')]
+	choices = [('Title (asc)', '0'), ('Release Date (asc)', '1'), ('Release Date (desc)', '2'), ('Shuffle', '3')]
 	list_items = [{'line1': item[0]} for item in choices]
 	kwargs = {'items': json.dumps(list_items), 'heading': 'List Sort Order', 'narrow_window': 'true'}
 	sort_order = kodi_utils.select_dialog([i[1] for i in choices], **kwargs)
@@ -294,17 +258,8 @@ def sort_order_tmdb_list():
 	return sort_order
 
 def check_item_status(list_id, media_type, media_id):
-	try:
-		item_status = tmdb_list_api.item_status(list_id, _tmdb_media_type(media_type), media_id)
-		return item_status.get('success', False) if item_status else False
-	except: return False
-
-def check_item_status_watchfav(list_id, media_type, media_id):
-	try:
-		media_type = _tmdb_media_type(media_type)
-		items = tmdb_list_api.get_watchfavrecs_list_details(list_id, media_type) or []
-		return int(media_id) in [i['id'] for i in items]
-	except: return False
+	item_status = tmdb_list_api.item_status(list_id, media_type, media_id)
+	return item_status['success']
 
 def make_new_tmdb_list(params):
 	suggested_list_name, chosen_list = '', None
@@ -351,7 +306,7 @@ def clear_tmdb_list(list_name, list_id):
 	return True
 
 def get_all_tmdb_lists(sort_order=None):
-	contents = tmdb_list_api.get_user_lists() or []
+	contents = tmdb_list_api.get_user_lists()
 	try:
 		if sort_order:
 			if sort_order in ('', '0', 'None'):
@@ -378,20 +333,17 @@ def get_all_tmdb_lists(sort_order=None):
 	return contents
 
 def get_tmdb_list(params):
-	list_id, media_type, sort_order = params['list_id'], params.get('media_type'), params.get('sort_order', None)
-	if list_id in ('watchlist', 'favorites', 'recommendations'):
-		contents = [dict(i, **{'media_type': media_type}) for i in tmdb_list_api.get_watchfavrecs_list_details(list_id, media_type)]
-		sort_order = tmdblists_sort_order(list_id)
-	else:
-		contents = tmdb_list_api.get_list_details(list_id)
-	contents = [dict(i, **{'title': i.get('title') or i.get('name'), 'release_date': i.get('release_date') or i.get('first_air_date')}) for i in contents]
+	list_id, sort_order = params['list_id'], params.get('sort_order', '0')
+	contents = tmdb_list_api.get_list_details(list_id)
 	if sort_order:
 		try:
-			if sort_order in ('4', 'None', '', 'original_order'): contents.sort(key=lambda k: (k['original_order'] is None, k['original_order']))
-			elif sort_order in ('3', 'shuffle'): shuffle(contents)
-			elif sort_order in ('1', '2'): contents.sort(key=lambda k: (k['release_date'] is None, k['release_date']), reverse=sort_order != '1')
-			elif sort_order in ('', '0', 'None'): contents = sort_for_article(contents, 'title', ignore_articles())
-			else: pass
+			if sort_order in ('3', 'shuffle'):
+				shuffle(contents)
+			elif sort_order in ('', '0', 'None'):
+				contents = sort_for_article(contents, 'title', ignore_articles())
+			elif sort_order in ('1', '2'):
+				reverse = sort_order != '1'
+				contents.sort(key=lambda k: (k['release_date'] is None, k['release_date']), reverse=reverse)
 		except: pass
 	return contents
 

@@ -6,7 +6,7 @@ from apis.real_debrid_api import RealDebrid
 from modules import kodi_utils
 from modules.source_utils import supported_video_extensions
 from modules.utils import clean_file_name, normalize, jsondate_to_datetime
-logger = kodi_utils.logger
+# logger = kodi_utils.logger
 
 def rd_cloud():
 	def _builder():
@@ -30,9 +30,8 @@ def rd_cloud():
 				yield (url, listitem, True)
 			except: pass
 	try:
-		cloud_files = RealDebrid.user_cloud()
-		cloud_files = [i for i in cloud_files if i['progress'] == 100 and i['status'] == 'downloaded']
-		logger('cloud_files', cloud_files)
+		cloud = RealDebrid.user_cloud()
+		cloud_files = [i for i in cloud if i['status'] == 'downloaded']
 	except: cloud_files = []
 	icon, fanart = kodi_utils.get_icon('realdebrid'), kodi_utils.get_addon_fanart()
 	handle = int(sys.argv[1])
@@ -66,18 +65,11 @@ def rd_downloads():
 				info_tag.setPlot(' ')
 				yield (url, listitem, True)
 			except: pass
-	icon, fanart = kodi_utils.get_icon('realdebrid'), kodi_utils.get_addon_fanart()
-	downloads = []
 	try:
-		kodi_utils.show_busy_dialog()
-		downloads = RealDebrid.downloads(fresh=True)
-		kodi_utils.hide_busy_dialog()
-		if not isinstance(downloads, list):
-			downloads = []
+		downloads = RealDebrid.downloads()
 		downloads = [i for i in downloads if i['download'].lower().endswith(tuple(supported_video_extensions()))]
-	except:
-		kodi_utils.hide_busy_dialog()
-		downloads = []
+	except: downloads = []
+	icon, fanart = kodi_utils.get_icon('realdebrid'), kodi_utils.get_addon_fanart()
 	handle = int(sys.argv[1])
 	kodi_utils.add_items(handle, list(_builder()))
 	kodi_utils.set_content(handle, 'files')
@@ -130,8 +122,8 @@ def resolve_rd(params):
 	url = params['url']
 	resolved_link = RealDebrid.unrestrict_link(url)
 	if params.get('play', 'false') != 'true' : return resolved_link
-	from modules.player import FinderPlayer
-	FinderPlayer().run(resolved_link, 'video')
+	from modules.player import finderPlayer
+	finderPlayer().run(resolved_link, 'video')
 
 def rd_account_info():
 	try:

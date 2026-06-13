@@ -14,8 +14,7 @@ from modules.utils import adjust_premiered_date, get_datetime, jsondate_to_datet
 # from modules.kodi_utils import logger
 
 def extras():
-	return ('sample', 'extra', 'extras', 'deleted', 'unused', 'footage', 'inside', 'blooper', 'bloopers',
-			'making.of', 'feature', 'featurette', 'behind.the.scenes', 'trailer')
+	return ('sample', 'extra', 'extras', 'deleted', 'unused', 'footage', 'inside', 'blooper', 'bloopers', 'making.of', 'feature', 'featurette', 'behind.the.scenes', 'trailer')
 
 def unwanted_tags():
 	return (
@@ -38,10 +37,9 @@ def source_filters():
 	return (
 ('PACK', 'PACK'), ('DOLBY VISION', '[B]D/VISION[/B]'), ('HIGH DYNAMIC RANGE (HDR)', '[B]HDR[/B]'), ('IMAX', 'IMAX'), ('HYBRID', '[B]HYBRID[/B]'), ('AV1', '[B]AV1[/B]'),
 ('HEVC (X265)', '[B]HEVC[/B]'), ('REMUX', 'REMUX'), ('BLURAY', 'BLURAY'), ('AI ENHANCED/UPSCALED', '[B]AI ENHANCED/UPSCALED[/B]'), ('SDR', 'SDR'), ('3D', '[B]3D[/B]'),
-('DOLBY ATMOS', 'ATMOS'), ('DOLBY TRUEHD', 'TRUEHD'), ('DOLBY DIGITAL EX', 'DD-EX'), ('DOLBY DIGITAL PLUS', 'DD+'), ('DOLBY DIGITAL', 'DD'),
-('DTS-HD MASTER AUDIO', 'DTS-HD MA'), ('DTS-X', 'DTS-X'), ('DTS-HD', 'DTS-HD'), ('DTS', 'DTS'), ('AAC', 'AAC'), ('OPUS', 'OPUS'), ('MP3', 'MP3'), ('8CH AUDIO', '8CH'),
-('7CH AUDIO', '7CH'), ('6CH AUDIO', '6CH'), ('2CH AUDIO', '2CH'), ('DVD SOURCE', 'DVD'), ('WEB SOURCE', 'WEB'), ('MULTIPLE LANGUAGES', 'MULTI-LANG'),
-('SUBTITLES', 'SUBS'))
+('DOLBY ATMOS', 'ATMOS'), ('DOLBY TRUEHD', 'TRUEHD'), ('DOLBY DIGITAL EX', 'DD-EX'), ('DOLBY DIGITAL PLUS', 'DD+'), ('DOLBY DIGITAL', 'DD'), ('DTS-HD MASTER AUDIO', 'DTS-HD MA'),
+('DTS-X', 'DTS-X'), ('DTS-HD', 'DTS-HD'), ('DTS', 'DTS'), ('AAC', 'AAC'), ('OPUS', 'OPUS'), ('MP3', 'MP3'), ('8CH AUDIO', '8CH'), ('7CH AUDIO', '7CH'), ('6CH AUDIO', '6CH'),
+('2CH AUDIO', '2CH'), ('DVD SOURCE', 'DVD'), ('WEB SOURCE', 'WEB'), ('MULTIPLE LANGUAGES', 'MULTI-LANG'), ('SUBTITLES', 'SUBS'))
 
 def include_exclude_filters():
 	return {'hevc': 'HEVC', '3d': '3D', 'hdr': 'HDR', 'dv': 'D/VISION', 'av1': 'AV1', 'enhanced_upscaled': 'AI ENHANCED/UPSCALED', 'hybrid': 'HYBRID'}
@@ -134,69 +132,6 @@ def seas_ep_filter(season, episode, release_title, split=False, return_match=Fal
 	if return_match: return re.search(reg_pattern, release_title).group()
 	return bool(re.search(reg_pattern, release_title))
 
-def seas_ep_filter_exact(season, episode, release_title):
-	"""Exact S/E only — for debrid cloud files (no multi-episode pack ranges)."""
-	str_season, str_episode = str(season), str(episode)
-	season_fill, episode_fill = str_season.zfill(2), str_episode.zfill(2)
-	release_title = re.sub(r'[^A-Za-z0-9-]+', '.', unquote(release_title).replace('\'', '')).lower()
-	patterns = (
-		r'(s<<S>>[.-]?e[p]?[.-]?<<E>>[.-])',
-		r'(season[.-]?<<S>>[.-]?episode[.-]?<<E>>[.-])',
-		r'([.-]<<S>>[.-]?<<E>>[.-])',
-		r'(episode[.-]?<<E>>[.-])',
-		r'([.-]e[p]?[.-]?<<E>>[.-])',
-		r'([s]?<<S>>x<<E>>[.-])',
-	)
-	string_list = []
-	for pattern in patterns:
-		for s, e in ((season_fill, episode_fill), (str_season, episode_fill), (season_fill, str_episode), (str_season, str_episode)):
-			string_list.append(pattern.replace('<<S>>', s).replace('<<E>>', e))
-	return bool(re.search('|'.join(string_list), release_title))
-
-def parse_episode_from_filename(release_title, season=None):
-	"""Parse SxxExx / 1x## from a filename; ignore season/episode folder path words."""
-	release_title = re.sub(r'[^A-Za-z0-9-]+', '.', unquote(release_title).replace('\'', '')).lower()
-	season_patterns = []
-	if season is not None:
-		sf, ss = str(season).zfill(2), str(season)
-		season_patterns = [sf, ss]
-	for pattern in (
-		r's(\d{1,2})[.-]?e[p]?[.-]?(\d{1,3})',
-		r'(\d{1,2})x(\d{1,3})',
-	):
-		for match in re.finditer(pattern, release_title):
-			try:
-				s_num, e_num = int(match.group(1)), int(match.group(2))
-			except Exception:
-				continue
-			if season_patterns and str(s_num) not in season_patterns and str(s_num).zfill(2) not in season_patterns:
-				continue
-			return e_num
-	return None
-
-def cloud_episode_matches(season, episode, filename):
-	"""Match requested episode using the file name only — not parent folder names like Episode 1/."""
-	str_season, str_episode = str(season), str(episode)
-	season_fill, episode_fill = str_season.zfill(2), str_episode.zfill(2)
-	filename = re.sub(r'[^A-Za-z0-9-]+', '.', unquote(filename).replace('\'', '')).lower()
-	if not filename:
-		return False
-	sxxexx_patterns = (
-		r'(s<<S>>[.-]?e[p]?[.-]?<<E>>[.-])',
-		r'([s]?<<S>>x<<E>>[.-])',
-		r'(\d{1,2}x<<E>>[.-])',
-	)
-	string_list = []
-	for pattern in sxxexx_patterns:
-		for s, e in ((season_fill, episode_fill), (str_season, episode_fill), (season_fill, str_episode), (str_season, str_episode)):
-			string_list.append(pattern.replace('<<S>>', s).replace('<<E>>', e))
-	if not re.search('|'.join(string_list), filename):
-		return False
-	parsed_ep = parse_episode_from_filename(filename, season)
-	if parsed_ep is not None:
-		return int(parsed_ep) == int(episode)
-	return True
-
 def find_season_in_release_title(release_title):
 	release_title = re.sub(r'[^A-Za-z0-9-]+', '.', unquote(release_title).replace('\'', '')).lower()
 	match = None
@@ -240,10 +175,7 @@ def check_title(title, release_title, aliases, year, season, episode):
 		if hdlr:
 			release_title = release_title.split(hdlr.lower())[0]
 			release_title = release_title.replace(year, '').replace('(', '').replace(')', '').replace('&', 'and').rstrip('.-').rstrip('.').rstrip('-').replace(':', '')
-			# Episodes: exact show title before SxxExx (Wings must not match Behind The Wings / Super Wings).
-			if season and season != 'pack':
-				if not any(release_title == i for i in cleaned_titles): return False
-			elif not any(item in release_title for item in cleaned_titles): return False
+			if not any(release_title == i for i in cleaned_titles): return False
 		else:
 			release_title = release_title.replace(year, '').replace('(', '').replace(')', '').replace('&', 'and').rstrip('.-').rstrip('.').rstrip('-').replace(':', '')
 			if not any(i in release_title for i in cleaned_titles): return False
@@ -306,8 +238,8 @@ def get_release_quality(release_info):
 		return 'TELE'
 	if any(i in release_info for i in ('720', '720p', '720i', 'hd720', '720hd', 'hd720p', '72o', '72op')):
 		return '720p'
-	if any(i in release_info for i in ('1080', '1080p', '1080i', 'hd1080', '1080hd', 'hd1080p', 'm1080p', 'fullhd', 'full.hd', '1o8o', '1o8op',
-		'108o', '108op', '1o80', '1o80p')): return '1080p'
+	if any(i in release_info for i in ('1080', '1080p', '1080i', 'hd1080', '1080hd', 'hd1080p', 'm1080p', 'fullhd', 'full.hd', '1o8o', '1o8op', '108o', '108op', '1o80', '1o80p')):
+		return '1080p'
 	if any(i in release_info for i in ('.4k', 'hd4k', '4khd', '.uhd', 'ultrahd', 'ultra.hd', 'hd2160', '2160hd', '2160', '2160p', '216o', '216op')):
 		return '4K'
 	return None
@@ -323,8 +255,7 @@ def get_info(title):
 	elif any(i in title for i in ('dolby.vision', 'dolbyvision', '.dovi.', '.dv.')):
 		info_append('[B]D/VISION[/B]')
 	elif any(i in title for i in ('2160p.bluray.hevc.truehd', '2160p.bluray.hevc.dts', '2160p.bluray.hevc.lpcm', '2160p.blu.ray.hevc.truehd', '2160p.blu.ray.hevc.dts',
-		'2160p.uhd.bluray', '2160p.uhd.blu.ray', '2160p.us.bluray.hevc.truehd', '2160p.us.bluray.hevc.dts', '.hdr.', 'hdr10', 'hdr.10', 'uhd.bluray.2160p',
-		'uhd.blu.ray.2160p')):
+		'2160p.uhd.bluray', '2160p.uhd.blu.ray', '2160p.us.bluray.hevc.truehd', '2160p.us.bluray.hevc.dts', '.hdr.', 'hdr10', 'hdr.10', 'uhd.bluray.2160p', 'uhd.blu.ray.2160p')):
 		info_append('[B]HDR[/B]')
 	elif all(i in title for i in ('2160p', 'remux')):
 		info_append('[B]HDR[/B]')
@@ -343,7 +274,7 @@ def get_info(title):
 		info_append('[B]HEVC[/B]')
 	if any(i in title for i in ('.imax.', '.(imax).', '.(.imax.).')):
 		info_append('IMAX')
-	elif any(i in title for i in ('.enhanced.', '.upscaled.', '.enhance.', '.upscale.', '.ai.')):
+	elif any(i in title for i in ('.enhanced.', '.upscaled.', '.enhance.', '.upscale.')):
 		info_append('[B]AI ENHANCED/UPSCALED[/B]')
 	if '.atvp' in title:
 		info_append('APPLETV+')
@@ -407,10 +338,10 @@ def get_info(title):
 		info_append('AVI')
 	elif any(i in title for i in ('.mkv', 'matroska')):
 		info_append('MKV')
-	if any(i in title for i in ('hindi.eng', 'ara.eng', 'ces.eng', 'chi.eng', 'cze.eng', 'dan.eng', 'dut.eng', 'ell.eng', 'esl.eng', 'esp.eng', 'fin.eng', 'fra.eng',
-		'fre.eng', 'frn.eng', 'gai.eng', 'ger.eng', 'gle.eng', 'gre.eng', 'gtm.eng', 'heb.eng', 'hin.eng', 'hun.eng', 'ind.eng', 'iri.eng', 'ita.eng', 'jap.eng',
-		'jpn.eng', 'kor.eng', 'lat.eng', 'lebb.eng', 'lit.eng', 'nor.eng', 'pol.eng', 'por.eng', 'rus.eng', 'som.eng', 'spa.eng', 'sve.eng', 'swe.eng', 'tha.eng',
-		'tur.eng', 'uae.eng', 'ukr.eng', 'vie.eng', 'zho.eng', 'dual.audio', 'multi')):
+	if any(i in title for i in ('hindi.eng', 'ara.eng', 'ces.eng', 'chi.eng', 'cze.eng', 'dan.eng', 'dut.eng', 'ell.eng', 'esl.eng', 'esp.eng', 'fin.eng', 'fra.eng', 'fre.eng',
+		'frn.eng', 'gai.eng', 'ger.eng', 'gle.eng', 'gre.eng', 'gtm.eng', 'heb.eng', 'hin.eng', 'hun.eng', 'ind.eng', 'iri.eng', 'ita.eng', 'jap.eng', 'jpn.eng', 'kor.eng',
+		'lat.eng', 'lebb.eng', 'lit.eng', 'nor.eng', 'pol.eng', 'por.eng', 'rus.eng', 'som.eng', 'spa.eng', 'sve.eng', 'swe.eng', 'tha.eng', 'tur.eng', 'uae.eng', 'ukr.eng',
+		'vie.eng', 'zho.eng', 'dual.audio', 'multi')):
 		info_append('MULTI-LANG')
 	if any(i in title for i in ('1xbet', 'betwin')):
 		info_append('ADS')

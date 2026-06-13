@@ -18,9 +18,9 @@ def get_key_id(params):
 	string = None
 	if search_type == 'media_title':
 		if media_type == 'movie': url_params, string = {'mode': 'build_movie_list', 'action': 'tmdb_movies_search'}, 'movie_queries'
-		elif media_type == 'tv_show': url_params, string = {'mode': 'build_tvshow_list', 'action': 'tmdb_tv_search', 'is_anime_list': 'false'}, 'tvshow_queries'
-		elif media_type == 'anime': url_params, string = {'mode': 'build_tvshow_list', 'action': 'tmdb_tv_search', 'is_anime_list': 'true'}, 'anime_queries'
-		else: url_params, string = {'mode': 'build_tvshow_list', 'action': 'tmdb_tv_search'}, 'tvshow_anime_queries'#media_type=tvshow_anime
+		elif media_type == 'anime': url_params, string = {'mode': 'build_tvshow_list', 'action': 'trakt_anime_search', 'is_anime_list': 'true'}, 'anime_queries'
+		elif media_type == 'tvshow_anime': url_params, string = {'mode': 'build_tvshow_list', 'action': 'tmdb_tv_search'}, 'tvshow_anime_queries'
+		else: url_params, string = {'mode': 'build_tvshow_list', 'action': 'trakt_tv_search'}, 'tvshow_queries'
 	elif search_type == 'people': string = 'people_queries'
 	elif search_type == 'tmdb_keyword':
 		url_params, string = {'mode': 'navigator.keyword_results', 'media_type': media_type}, 'keyword_tmdb_%s_queries' % media_type
@@ -64,8 +64,8 @@ def clear_search():
 	('Clear People Search History', 'people_queries'),
 	('Clear Keywords Movie Search History', 'keyword_tmdb_movie_queries'),
 	('Clear Keywords TV Show Search History', 'keyword_tmdb_tvshow_queries'),
-	('Clear EasyNews Search History', 'easynews_video_queries'),
-	('Clear EasyNews Search History', 'easynews_image_queries'),
+	('Clear Easynews Search History', 'easynews_video_queries'),
+	('Clear Easynews Search History', 'easynews_image_queries'),
 	('Clear Trakt List Search History', 'trakt_list_queries')]
 	try:
 		list_items = [{'line1': item[0]} for item in clear_history_list]
@@ -78,12 +78,6 @@ def clear_search():
 def clear_all(setting_id, refresh='false'):
 	main_cache.set(setting_id, '', expiration=365)
 	notification('Success', 2500)
-	if refresh == 'true': kodi_refresh()
-
-def clear_easynews_search_history(refresh='false', silent=False):
-	main_cache.set('easynews_video_queries', '', expiration=365)
-	main_cache.set('easynews_image_queries', '', expiration=365)
-	if not silent: notification('Success', 2500)
 	if refresh == 'true': kodi_refresh()
 
 	

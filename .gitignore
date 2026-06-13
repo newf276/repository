@@ -165,3 +165,5 @@ cython_debug/
 .DS_Store
 .DS_Store
 .DS_Store
+.DS_Store
+plugin.program.cleaner/.DS_Store

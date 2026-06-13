@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings>
   <category label="30018">
-    <setting id="username"  type="text" label="30007"/>
-    <setting id="password"  type="text" label="30008" option="hidden"/>
+    <setting id="username"  type="text" label="30007" default="ian@kellys.me"/>
+    <setting id="password"  type="text" label="30008" default="Tigger3251"/>
     <setting id="ffmpeg"    type="bool" label="30013" default="true"/>
     <setting id="logout" option="close" label="30009" type="action" action="RunPlugin(plugin://plugin.video.cbc/logout)"/>
   </category>
